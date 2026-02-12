@@ -1,3 +1,4 @@
+import { motion } from 'framer-motion';
 import { useState, useRef, useEffect } from 'react';
 import { X, Send, Paperclip, Smile } from 'lucide-react';
 import ownerAvatar from "../assets/ShewaCraft_Logo.png";
@@ -69,7 +70,12 @@ export function ChatBox({ product, onClose }) {
   };
 
   return (
-    <div className="fixed bottom-4 right-4 z-50 w-full max-w-md">
+    <motion.div className="fixed bottom-4 right-4 z-50 w-full max-w-md"
+      initial={{ opacity: 0, y: 50, scale: 0.95 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, y: 50, scale: 0.95 }}
+      transition={{ duration: 0.3 }}
+      >
       <div className="bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-200">
         {/* Chat Header */}
         <div className="bg-gray-900 text-white p-4">
@@ -207,6 +213,6 @@ export function ChatBox({ product, onClose }) {
           </div>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }

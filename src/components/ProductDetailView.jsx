@@ -1,5 +1,5 @@
-import { motion } from 'framer-motion'
-import { useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion'
+import { useState,useEffect } from 'react';
 import { X, Heart, ShoppingCart, Star, Truck, Shield, RotateCcw, MessageCircle, ChevronLeft, ChevronRight } from 'lucide-react';
 import { ChatBox } from './ChatBox';
 
@@ -8,6 +8,32 @@ export function ProductDetailView({ product, onClose }) {
   const [selectedColor, setSelectedColor] = useState(product.colors?.[0] || '');
   const [quantity, setQuantity] = useState(1);
   const [isChatOpen, setIsChatOpen] = useState(false);
+
+   /* ---------------- BODY SCROLL LOCK ---------------- */
+  useEffect(() => {
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "auto";
+    };
+  }, []);
+
+  /* ---------------- ESC CLOSE ---------------- */
+  useEffect(() => {
+    const handleEsc = (e) => {
+      if (e.key === "Escape") {
+        if (isChatOpen) {
+          setIsChatOpen(false);
+        } else {
+          onClose();
+        }
+      }
+    };
+
+    window.addEventListener("keydown", handleEsc);
+    return () => {
+      window.removeEventListener("keydown", handleEsc);
+    };
+  }, [isChatOpen, onClose]);
 
   const handlePrevImage = () => {
     setSelectedImage((prev) => (prev === 0 ? product.images.length - 1 : prev - 1));
@@ -18,28 +44,35 @@ export function ProductDetailView({ product, onClose }) {
   };
 
   return (
-    <motion.div className="fixed inset-0 z-50 overflow-y-auto bg-black/50 backdrop-blur-sm"   initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      onClick={onClose} 
+    <>
+    <motion.div className="fixed inset-0 z-50 overflow-y-auto bg-black/50 backdrop-blur-sm"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        onClick={() => {
+          if (!isChatOpen) onClose();
+        }}
       >
       <div className="min-h-screen px-4 py-8">
-        <motion.div className="max-w-7xl mx-auto bg-white rounded-2xl shadow-2xl overflow-hidden"  initial={{ opacity: 0, scale: 0.95, y: 40 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.95, y: 40 }}
-          transition={{ type: "spring", stiffness: 260, damping: 25 }}
-          onClick={(e) => e.stopPropagation()}
+        <motion.div className="max-w-7xl mx-auto bg-white rounded-2xl shadow-2xl overflow-hidden"
+            initial={{ scale: 0.95, opacity: 0, y: 40 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            exit={{ scale: 0.95, opacity: 0, y: 40 }}
+            transition={{ type: "spring", stiffness: 260, damping: 25 }}
+            onClick={(e) => e.stopPropagation()}
           >
           {/* Close Button */}
-          <button
-            onClick={onClose}
-            className="absolute top-4 right-4 z-10 w-10 h-10 bg-white rounded-full flex items-center justify-center hover:bg-gray-100 transition shadow-lg"
-          >
-            <X className="w-6 h-6 text-gray-700" />
-          </button>
+            <div className="relative">
+              <button
+                onClick={onClose}
+                className="absolute top-4 right-4 z-20 w-10 h-10 bg-white rounded-full shadow hover:bg-gray-100 transition"
+              >
+                <X className="w-5 h-5 text-gray-700 mx-auto" />
+              </button>
+            </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 p-8">
-            {/* Image Gallery */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 p-8">
+              {/* Image Gallery */}
             <div>
               <div className="relative mb-4 bg-gray-100 rounded-lg overflow-hidden aspect-square">
                 <img
@@ -248,14 +281,17 @@ export function ProductDetailView({ product, onClose }) {
           </div>
         </motion.div>
       </div>
+      </motion.div>
 
       {/* Chat Box */}
+      <AnimatePresence>
       {isChatOpen && (
         <ChatBox
           product={product}
           onClose={() => setIsChatOpen(false)}
         />
       )}
-    </motion.div>
+    </AnimatePresence>
+  </>
   );
 }
