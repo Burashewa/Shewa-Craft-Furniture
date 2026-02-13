@@ -1,7 +1,7 @@
 import { ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
-export function Hero({ onLearnMoreClick }) {
+export function Hero({ onAboutClick }) {
   return (
     <section className="relative h-[90vh] mt-16 overflow-hidden">
       {/* Background Image */}
@@ -28,7 +28,7 @@ export function Hero({ onLearnMoreClick }) {
               Shop Collection
               <ArrowRight className="w-5 h-5" />
             </Link>
-            <Link onClick={onLearnMoreClick} className="px-8 py-4 bg-transparent text-white border-2 border-white hover:bg-white/10 transition">
+            <Link onClick={onAboutClick} className="px-8 py-4 bg-transparent text-white border-2 border-white hover:bg-white/10 transition">
               Learn More
             </Link>
           </div>

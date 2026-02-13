@@ -2,7 +2,7 @@ import { Search, ShoppingCart, User, Menu } from 'lucide-react';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 
-export function Header() {
+export function Header({ onAboutClick }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
@@ -12,26 +12,20 @@ export function Header() {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <div className="shrink-0">
-            <Link to="/" className="text-2xl font-semibold text-gray-900">FURNISH</Link>
+            <Link to="/" className="text-2xl font-semibold text-gray-900">ShewaCraft Furniture</Link>
           </div>
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
-            <a href="#" className="text-gray-700 hover:text-gray-900 transition">
-              Living Room
-            </a>
-            <a href="#" className="text-gray-700 hover:text-gray-900 transition">
-              Bedroom
-            </a>
-            <a href="#" className="text-gray-700 hover:text-gray-900 transition">
-              Dining
-            </a>
-            <a href="#" className="text-gray-700 hover:text-gray-900 transition">
-              Office
-            </a>
-            <a href="#" className="text-gray-700 hover:text-gray-900 transition">
-              Sale
-            </a>
+            <Link to="/" className="text-gray-700 hover:text-gray-900 transition">
+              Home
+            </Link>
+            <Link to="/products" className="text-gray-700 hover:text-gray-900 transition">
+              Products
+            </Link>
+            <button onClick={onAboutClick} className="text-gray-700 hover:text-gray-900 transition">
+              About
+            </button>
           </nav>
 
           {/* Right Actions */}
@@ -88,21 +82,15 @@ export function Header() {
         {mobileMenuOpen && (
           <div className="md:hidden py-4 border-t border-gray-200">
             <nav className="flex flex-col space-y-3">
-              <a href="#" className="text-gray-700 hover:text-gray-900 transition">
-                Living Room
-              </a>
-              <a href="#" className="text-gray-700 hover:text-gray-900 transition">
-                Bedroom
-              </a>
-              <a href="#" className="text-gray-700 hover:text-gray-900 transition">
-                Dining
-              </a>
-              <a href="#" className="text-gray-700 hover:text-gray-900 transition">
-                Office
-              </a>
-              <a href="#" className="text-gray-700 hover:text-gray-900 transition">
-                Sale
-              </a>
+              <Link to="/" className="text-gray-700 hover:text-gray-900 transition">
+                Home
+              </Link>
+              <Link to="/living-room" className="text-gray-700 hover:text-gray-900 transition">
+                Products
+              </Link>
+              <button onClick={onAboutClick} className="text-gray-700 hover:text-gray-900 transition">
+                About
+              </button>
             </nav>
           </div>
         )}

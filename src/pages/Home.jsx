@@ -26,7 +26,7 @@ export default function Home() {
   return (
     <>
         <Header />
-        <Hero onLearnMoreClick={scrollToAbout} />
+        <Hero onAboutClick={scrollToAbout} />
         <FeaturedProducts onViewDetails ={openProductDetails} />
         <AboutSection ref={aboutRef} />
         <Footer />

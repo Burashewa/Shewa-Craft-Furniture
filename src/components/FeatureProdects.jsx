@@ -71,6 +71,7 @@ export function FeaturedProducts({ onViewDetails }) {
             </div>
           ))}
         </div>
+    
 
         {/* View All */}
         <div className="text-center mt-12">
