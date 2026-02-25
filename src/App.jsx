@@ -6,6 +6,7 @@ import SignIn from "./pages/auth/SignIn";
 import SignUp from "./pages/auth/SignUp";
 import AboutPage from "./pages/AboutPage";
 import { AdminDashboard } from "./pages/AdminDashboard";
+import Orders from "./pages/Orders";
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
       <Route path="/products" element={<Products />} />
       <Route path="/cart" element={<Cart />} />
       <Route path="/about" element={<AboutPage />} />
+      <Route path="/orders" element={<Orders />} />
     </Routes>
   );
 }

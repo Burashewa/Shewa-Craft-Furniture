@@ -215,8 +215,17 @@ export function OrdersManagement() {
                   <div className="text-sm text-gray-500">{order.customer.email}</div>
                 </td>
                 <td className="px-6 py-4">
-                  <div className="text-sm text-gray-900">{order.product.name}</div>
-                  <div className="text-sm text-gray-500">Qty: {order.product.quantity}</div>
+                  <div className="flex items-center">
+                    <img
+                      src={order.product.image}
+                      alt={order.product.name}
+                      className="w-12 h-12 rounded object-cover mr-4"
+                    />
+                    <div>
+                      <div className="text-sm text-gray-900">{order.product.name}</div>
+                      <div className="text-sm text-gray-500">Qty: {order.product.quantity}</div>
+                    </div>
+                  </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                   ${order.total}
@@ -247,8 +256,8 @@ export function OrdersManagement() {
 
   {/* Order Detail Modal */}
   {selectedOrder && (
-    <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4 overflow-y-auto">
-      <div className="bg-white rounded-lg max-w-3xl w-full my-8">
+    <div className="fixed inset-0 z-50 bg-black/50 flex items-start md:items-center justify-center p-4 overflow-y-auto">
+      <div className="bg-white rounded-lg max-w-3xl w-full my-8 max-h-[100vh] overflow-y-auto">
         <div className="p-6 border-b border-gray-200 flex items-center justify-between">
           <h2 className="text-2xl text-gray-900">Order Details - {selectedOrder.id}</h2>
           <button onClick={() => setSelectedOrder(null)}>
@@ -271,12 +280,21 @@ export function OrdersManagement() {
           {/* Product Info */}
           <div>
             <h3 className="text-lg font-semibold text-gray-900 mb-3">Product Details</h3>
-            <div className="bg-gray-50 rounded-lg p-4 space-y-2">
-              <p><span className="font-medium">Product:</span> {selectedOrder.product.name}</p>
-              <p><span className="font-medium">Price:</span> ${selectedOrder.product.price}</p>
-              <p><span className="font-medium">Quantity:</span> {selectedOrder.product.quantity}</p>
-              <p className="text-lg"><span className="font-medium">Total:</span> ${selectedOrder.total}</p>
-            </div>
+            <div className="bg-gray-50 rounded-lg p-4">
+                <div className="flex flex-col md:flex-row md:items-start md:gap-6">
+                  <img
+                    src={selectedOrder.product.image}
+                    alt={selectedOrder.product.name}
+                    className="w-full max-w-xs h-40 object-cover rounded-lg mb-4 md:mb-0"
+                  />
+                  <div className="space-y-2">
+                    <p><span className="font-medium">Product:</span> {selectedOrder.product.name}</p>
+                    <p><span className="font-medium">Price:</span> ${selectedOrder.product.price}</p>
+                    <p><span className="font-medium">Quantity:</span> {selectedOrder.product.quantity}</p>
+                    <p className="text-lg"><span className="font-medium">Total:</span> ${selectedOrder.total}</p>
+                  </div>
+                </div>
+              </div>
           </div>
 
           {/* Payment Info */}

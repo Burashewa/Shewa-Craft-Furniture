@@ -11,6 +11,7 @@ export function ProductsManagement() {
   const [viewingProduct, setViewingProduct] = useState(null);
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState('');
+  const [colorInput, setColorInput] = useState('');
   const [formData, setFormData] = useState({
     name: '',
     price: 0,
@@ -21,6 +22,7 @@ export function ProductsManagement() {
     reviews: 0,
     inStock: true,
     colors: [],
+    assembly: '',
     specifications: [],
     owner: {
       name: 'Admin',
@@ -52,6 +54,7 @@ export function ProductsManagement() {
     setEditingProduct(null);
     setImageFile(null);
     setImagePreview('');
+    setColorInput('');
     setFormData({
       name: '',
       price: 0,
@@ -62,6 +65,7 @@ export function ProductsManagement() {
       reviews: 0,
       inStock: true,
       colors: [],
+      assembly: '',
       specifications: [],
       owner: {
         name: 'Admin',
@@ -78,7 +82,22 @@ export function ProductsManagement() {
     setFormData(product);
     setImagePreview(product.images[0] || '');
     setImageFile(null);
+    setColorInput('');
     setShowAddModal(true);
+  };
+
+  const addColor = (value) => {
+    const v = value.trim();
+    if (!v) return;
+    const exists = (formData.colors || []).some((c) => c.toLowerCase() === v.toLowerCase());
+    if (exists) return;
+    const newColors = [...(formData.colors || []), v];
+    setFormData({ ...formData, colors: newColors });
+  };
+
+  const removeColor = (idx) => {
+    const newColors = (formData.colors || []).filter((_, i) => i !== idx);
+    setFormData({ ...formData, colors: newColors });
   };
 
   const handleViewProduct = (product) => {
@@ -246,8 +265,8 @@ export function ProductsManagement() {
 
       {/* Add/Edit Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white rounded-lg max-w-2xl w-full my-8">
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-start md:items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white rounded-lg max-w-2xl w-full my-8 max-h-[100vh] overflow-y-auto">
             <div className="p-6 border-b border-gray-200 flex items-center justify-between">
               <h2 className="text-2xl text-gray-900">
                 {editingProduct ? 'Edit Product' : 'Add New Product'}
@@ -410,6 +429,45 @@ export function ProductsManagement() {
                   />
                 </div>
 
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Colors</label>
+                  <div className="border border-gray-300 rounded-lg px-3 py-2">
+                    <div className="flex flex-wrap gap-2 mb-2">
+                      {(formData.colors || []).map((color, idx) => (
+                        <span key={idx} className="inline-flex items-center gap-2 bg-gray-100 text-gray-800 px-2 py-1 rounded-full text-sm">
+                          <span>{color}</span>
+                          <button type="button" onClick={() => removeColor(idx)} className="text-gray-500 hover:text-gray-700">×</button>
+                        </span>
+                      ))}
+                    </div>
+                    <input
+                      type="text"
+                      value={colorInput}
+                      onChange={(e) => setColorInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          addColor(colorInput);
+                          setColorInput('');
+                        }
+                      }}
+                      placeholder="Type a color and press Enter"
+                      className="w-full px-2 py-1 focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Assembly</label>
+                  <input
+                    type="text"
+                    value={formData.assembly || ''}
+                    onChange={(e) => setFormData({ ...formData, assembly: e.target.value })}
+                    placeholder="e.g., Requires minimal assembly"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900"
+                  />
+                </div>
+
                 <div>
                   <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
                     <input
@@ -445,8 +503,8 @@ export function ProductsManagement() {
 
       {/* Product Detail Modal */}
       {showDetailModal && viewingProduct && (
-        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white rounded-lg max-w-4xl w-full my-8">
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-start md:items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white rounded-lg max-w-4xl w-full my-8 max-h-[90vh] overflow-y-auto">
             <div className="p-6 border-b border-gray-200 flex items-center justify-between">
               <h2 className="text-2xl text-gray-900">Product Details</h2>
               <button onClick={() => setShowDetailModal(false)}>
@@ -530,20 +588,6 @@ export function ProductsManagement() {
                     </div>
                   </div>
 
-                  {/* <div className="bg-gray-50 rounded-lg p-4">
-                    <p className="text-sm font-medium text-gray-700 mb-2">Owner</p>
-                    <div className="flex items-center gap-3">
-                      <img
-                        src={viewingProduct.owner.avatar}
-                        alt={viewingProduct.owner.name}
-                        className="w-10 h-10 rounded-full"
-                      />
-                      <div>
-                        <p className="font-medium text-gray-900">{viewingProduct.owner.name}</p>
-                        <p className="text-sm text-gray-600">{viewingProduct.owner.responseTime}</p>
-                      </div>
-                    </div>
-                  </div> */}
                 </div>
               </div>
             </div>

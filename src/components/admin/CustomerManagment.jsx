@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Search, Ban, UserCheck, Mail, X as XIcon } from 'lucide-react';
 
 export function CustomersManagement() {
@@ -66,6 +67,7 @@ export function CustomersManagement() {
   ]);
 
   const [selectedCustomer, setSelectedCustomer] = useState(null);
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
 
@@ -248,8 +250,8 @@ export function CustomersManagement() {
 
   {/* Customer Detail Modal */}
   {selectedCustomer && (
-    <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4 overflow-y-auto">
-      <div className="bg-white rounded-lg max-w-2xl w-full my-8">
+    <div className="fixed inset-0 z-50 bg-black/50 flex items-start md:items-center justify-center p-4 overflow-y-auto">
+      <div className="bg-white rounded-lg max-w-2xl w-full my-8 max-h-[90vh] overflow-y-auto">
         <div className="p-6 border-b border-gray-200 flex items-center justify-between">
           <h2 className="text-2xl text-gray-900">Customer Details</h2>
           <button onClick={() => setSelectedCustomer(null)}>
@@ -305,8 +307,12 @@ export function CustomersManagement() {
         </div>
 
         {/* Actions */}
-        <div className="p-6 border-t border-gray-200 flex justify-end gap-3">
-          <button className="flex items-center gap-2 px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition">
+          <div className="p-6 border-t border-gray-200 flex justify-end gap-3">
+          <button
+            type="button"
+            onClick={() => navigate(`/messages/inbox/${selectedCustomer.id}`)}
+            className="flex items-center gap-2 px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition"
+          >
             <Mail className="w-5 h-5" />
             Send Message
           </button>

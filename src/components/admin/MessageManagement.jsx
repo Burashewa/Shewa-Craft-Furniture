@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Search, Mail, MoreVertical, Send } from 'lucide-react';
 
 export function MessagesManagement() {
@@ -26,6 +26,14 @@ export function MessagesManagement() {
   const [selectedConversation, setSelectedConversation] = useState(null);
   const [newMessage, setNewMessage] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+  const messagesContainerRef = useRef(null);
+
+  useEffect(() => {
+    const el = messagesContainerRef.current;
+    if (!el || !selectedConversation) return;
+    // Scroll to bottom to show latest message
+    el.scrollTop = el.scrollHeight;
+  }, [selectedConversation?.id, selectedConversation?.messages?.length]);
 
   const filteredConversations = conversations.filter((conv) =>
     conv.customerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -192,7 +200,7 @@ export function MessagesManagement() {
         </div>
 
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        <div ref={messagesContainerRef} className="flex-1 overflow-y-auto p-4 space-y-4">
           {selectedConversation.messages.map((message) => (
             <div
               key={message.id}

@@ -22,8 +22,8 @@ export const products = [
     specifications: [
       { label: "Dimensions", value: '32" W x 34" D x 36" H' },
       { label: "Material", value: "Velvet Upholstery, Oak Frame" },
-      { label: "Weight Capacity", value: "300 lbs" },
       { label: "Assembly", value: "Minimal assembly required" },
+      { label: "Warrenty", value: "2 years" },
     ],
     colors: ["Navy", "Emerald", "Burgundy"],
   },
@@ -50,8 +50,8 @@ export const products = [
     specifications: [
       { label: "Dimensions", value: '48" W x 24" D x 18" H' },
       { label: "Material", value: "Walnut Wood, Steel Legs" },
-      { label: "Weight", value: "45 lbs" },
-      { label: "Finish", value: "Natural Oil" },
+      { label: "Assembly", value: "Minimal assembly required" },
+      { label: "Warrenty", value: "2 years" },
     ],
     colors: ["Walnut", "Oak", "Black"],
   },
@@ -77,9 +77,10 @@ export const products = [
     },
     specifications: [
       { label: "Dimensions", value: '84" W x 38" D x 32" H' },
-      { label: "Seating Capacity", value: "3-4 people" },
       { label: "Material", value: "Premium Velvet, Hardwood Frame" },
-      { label: "Cushion Fill", value: "High-density foam" },
+      { label: "Assembly", value: "Minimal assembly required" },
+      { label: "Warrenty", value: "1 years" },
+     
     ],
     colors: ["Charcoal", "Navy", "Blush"],
   },
@@ -106,8 +107,8 @@ export const products = [
     specifications: [
       { label: "Dimensions", value: '72" H x 36" W x 12" D' },
       { label: "Material", value: "Solid Oak Wood" },
-      { label: "Shelves", value: "5 adjustable shelves" },
-      { label: "Weight Capacity", value: "50 lbs per shelf" },
+      { label: "Assembly", value: "Minimal assembly required" },
+      { label: "Warrenty", value: "3 years" },
     ],
     colors: ["Natural Oak", "Walnut", "White"],
   },
@@ -134,8 +135,8 @@ export const products = [
     specifications: [
       { label: "Dimensions", value: '20" W x 16" D x 24" H' },
       { label: "Material", value: "Ash Wood, Metal Handles" },
-      { label: "Storage", value: "1 drawer, 1 shelf" },
-      { label: "Finish", value: "Matte Lacquer" },
+      { label: "Assembly", value: "Minimal assembly required" },
+      { label: "Warrenty", value: "2 years" },
     ],
     colors: ["White", "Gray", "Natural"],
   },
@@ -160,9 +161,9 @@ export const products = [
       responseTime: "Within 5 hours",
     },
     specifications: [
-      { label: "Set Includes", value: "Loveseat, 2 Chairs, Coffee Table" },
+      { label: "Dimensions", value: 'Loveseat: 60" W x 30" D x 32" H' },
       { label: "Material", value: "Wicker, Aluminum Frame" },
-      { label: "Cushions", value: "Weather-resistant fabric" },
+      { label: "Assembly", value: "No assembly required" },
       { label: "Warranty", value: "2 years" },
     ],
     colors: ["Gray", "Brown"],
