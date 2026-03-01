@@ -2,7 +2,7 @@ import { Search, ShoppingCart, User,Mail, Menu } from 'lucide-react';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 
-export function Header({ onAboutClick }) {
+export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(true);
 
@@ -12,7 +12,7 @@ export function Header({ onAboutClick }) {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <div className="shrink-0">
-            <Link to="/" className="text-2xl font-semibold text-gray-900">ShewaCraft Furniture</Link>
+            <Link to="/" className="text-2xl font-semibold text-gray-900">ShewaCraft </Link>
           </div>
 
           {/* Desktop Navigation */}
@@ -23,12 +23,12 @@ export function Header({ onAboutClick }) {
             <Link to="/products" className="text-gray-700 hover:text-gray-900 transition">
               Products
             </Link>
-            <button to="/orders" className="text-gray-700 hover:text-gray-900 transition">
+            <Link to="../orders" className="text-gray-700 hover:text-gray-900 transition">
               Orders
-            </button>
-            <button onClick={onAboutClick} className="text-gray-700 hover:text-gray-900 transition">
+            </Link>
+            <Link to="../about" className="text-gray-700 hover:text-gray-900 transition">
               About
-            </button>
+            </Link>
           </nav>
 
           {/* Right Actions */}
@@ -62,7 +62,7 @@ export function Header({ onAboutClick }) {
                 </button>
 
                 <button className="text-gray-700 hover:text-gray-900 transition relative">
-                  <Link to="/cart">
+                  <Link to="../cart">
                     <ShoppingCart className="w-5 h-5" />
                     <span className="absolute -top-1.5 -right-1.5 bg-gray-900 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center border-2 border-white">
                       0
@@ -102,12 +102,12 @@ export function Header({ onAboutClick }) {
               <Link to="/living-room" className="text-gray-700 hover:text-gray-900 transition">
                 Products
               </Link>
-              <button to="/orders" className="text-gray-700 hover:text-gray-900 transition">
+              <Link to="../orders" className="text-gray-700 hover:text-gray-900 transition">
                 Orders
-              </button>
-              <button onClick={onAboutClick} className="text-gray-700 hover:text-gray-900 transition">
+              </Link>
+              <Link to="../about" className="text-gray-700 hover:text-gray-900 transition">
                 About
-              </button>
+              </Link>
             </nav>
           </div>
         )}

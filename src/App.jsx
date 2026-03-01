@@ -7,6 +7,7 @@ import SignUp from "./pages/auth/SignUp";
 import AboutPage from "./pages/AboutPage";
 import { AdminDashboard } from "./pages/AdminDashboard";
 import Orders from "./pages/Orders";
+import Messages from "./pages/Messages";
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
       <Route path="/cart" element={<Cart />} />
       <Route path="/about" element={<AboutPage />} />
       <Route path="/orders" element={<Orders />} />
+      <Route path="/messages" element={<Messages />} />
     </Routes>
   );
 }
