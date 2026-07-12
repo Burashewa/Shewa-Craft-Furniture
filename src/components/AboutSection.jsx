@@ -42,7 +42,7 @@ export const AboutSection = forwardRef((props, ref) => {
               our furniture is built to elevate your everyday living.
             </p>
 
-            <Link to={"../../About"} className="px-6 py-3 bg-gray-900 text-white hover:bg-gray-800 transition">
+            <Link to="/about" className="px-6 py-3 bg-gray-900 text-white hover:bg-gray-800 transition">
               Learn More About Us →
             </Link>
           </div>

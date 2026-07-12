@@ -1,9 +1,12 @@
-import { AnimatePresence} from "framer-motion";
+import { AnimatePresence } from "framer-motion";
 import { useRef, useState } from "react";
 import { Header } from "../components/Header";
 import { Hero } from "../components/Hero";
+import { CategorySection } from "../components/CategorySection";
 import { FeaturedProducts } from "../components/FeatureProdects";
-import { AboutSection } from "../components/AboutSection"; 
+import { AboutSection } from "../components/AboutSection";
+import { Testimonials } from "../components/Testimonials";
+import { HomeCTA } from "../components/HomeCTA";
 import { Footer } from "../components/Footer";
 import { ProductDetailView } from "../components/ProductDetailView";
 
@@ -15,7 +18,6 @@ export default function Home() {
     aboutRef.current.scrollIntoView({ behavior: "smooth" });
   };
 
-
   const openProductDetails = (product) => {
     setSelectedProduct(product);
   };
@@ -25,21 +27,23 @@ export default function Home() {
 
   return (
     <>
-        <Header />
-        <Hero onAboutClick={scrollToAbout} />
-        <FeaturedProducts onViewDetails ={openProductDetails} />
-        <AboutSection ref={aboutRef} />
-        <Footer />
+      <Header />
+      <Hero onAboutClick={scrollToAbout} />
+      <CategorySection />
+      <FeaturedProducts onViewDetails={openProductDetails} />
+      <AboutSection ref={aboutRef} />
+      <Testimonials />
+      <HomeCTA />
+      <Footer />
 
-        {/* Modal */}
-        <AnimatePresence>
-          {selectedProduct && (
-            <ProductDetailView
-              product={selectedProduct}
-              onClose={closeProductDetails}
-            />
-          )}
-        </AnimatePresence>
+      <AnimatePresence>
+        {selectedProduct && (
+          <ProductDetailView
+            product={selectedProduct}
+            onClose={closeProductDetails}
+          />
+        )}
+      </AnimatePresence>
     </>
   );
 }

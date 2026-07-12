@@ -6,6 +6,7 @@ export const products = [
     description:
       "Experience ultimate comfort with our handcrafted luxury velvet armchair. Featuring premium upholstery, solid wood frame, and ergonomic design perfect for any modern living space.",
     category: "Living Room",
+    featured: true,
     images: [
       "https://images.unsplash.com/photo-1765663241884-ebd171bdda1d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080",
       "https://images.unsplash.com/photo-1759196450910-c44faf7abcdf?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080",
@@ -62,6 +63,7 @@ export const products = [
     description:
       "Transform your living room with this stunning premium velvet sofa. Deep seating, plush cushions, and timeless design make it the perfect centerpiece.",
     category: "Living Room",
+    featured: true,
     images: [
       "https://images.unsplash.com/photo-1638191376884-f371a22c719f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080",
       "https://images.unsplash.com/photo-1668365011614-9c4a49a0e89d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080",
@@ -119,6 +121,7 @@ export const products = [
     description:
       "Clean-lined nightstand with a drawer and open shelf. Perfect for modern bedrooms, combining functionality with elegant simplicity.",
     category: "Bedroom",
+    featured: true,
     images: [
       "https://images.unsplash.com/photo-1762856490803-8e200418973a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080",
       "https://images.unsplash.com/photo-1680503146454-04ac81a63550?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080",
@@ -147,6 +150,7 @@ export const products = [
     description:
       "Complete outdoor patio furniture set including loveseat, chairs, and coffee table. Weather-resistant and built to last.",
     category: "Outdoor",
+    featured: true,
     images: [
       "https://images.unsplash.com/photo-1560990883-9b76fec399a9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080",
       "https://images.unsplash.com/photo-1637762646936-29b68cd6670d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080",

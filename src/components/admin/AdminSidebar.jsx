@@ -9,8 +9,10 @@ import {
   X
 } from 'lucide-react';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 
-function SidebarContent({ currentView, onViewChange, setMobileMenuOpen, menuItems }) {
+function SidebarContent({ currentView, onViewChange, setMobileMenuOpen, menuItems, onLogout }) {
   return (
     <>
       <div className="p-6 border-b border-gray-700">
@@ -44,7 +46,11 @@ function SidebarContent({ currentView, onViewChange, setMobileMenuOpen, menuItem
       </nav>
 
       <div className="p-4 border-t border-gray-700">
-        <button className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-300 hover:bg-gray-700/50 hover:text-white transition">
+        <button
+          type="button"
+          onClick={onLogout}
+          className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-300 hover:bg-gray-700/50 hover:text-white transition"
+        >
           <LogOut className="w-5 h-5" />
           <span>Logout</span>
         </button>
@@ -55,6 +61,14 @@ function SidebarContent({ currentView, onViewChange, setMobileMenuOpen, menuItem
 
 export function AdminSidebar({ currentView, onViewChange }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { signOut } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    signOut();
+    setMobileMenuOpen(false);
+    navigate('/', { replace: true });
+  };
 
   const menuItems = [
     { id: 'overview', label: 'Dashboard', icon: LayoutDashboard },
@@ -84,6 +98,7 @@ export function AdminSidebar({ currentView, onViewChange }) {
           onViewChange={onViewChange}
           setMobileMenuOpen={setMobileMenuOpen}
           menuItems={menuItems}
+          onLogout={handleLogout}
         />
       </div>
 
@@ -101,6 +116,7 @@ export function AdminSidebar({ currentView, onViewChange }) {
               onViewChange={onViewChange}
               setMobileMenuOpen={setMobileMenuOpen}
               menuItems={menuItems}
+              onLogout={handleLogout}
             />
           </div>
         </div>

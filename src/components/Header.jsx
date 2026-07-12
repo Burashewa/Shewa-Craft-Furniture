@@ -1,113 +1,192 @@
-import { Search, ShoppingCart, User,Mail, Menu } from 'lucide-react';
+import { ShoppingCart, Mail, Menu, X, LogOut } from 'lucide-react';
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, NavLink, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+
+const navLinkClass = ({ isActive }) =>
+  `transition ${isActive ? 'text-gray-900 font-medium' : 'text-gray-700 hover:text-gray-900'}`;
+
+const navItems = [
+  { to: '/', label: 'Home', end: true },
+  { to: '/products', label: 'Products' },
+  { to: '/about', label: 'About' },
+];
+
+const authNavItems = [{ to: '/orders', label: 'Orders' }];
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(true);
+  const { isAuthenticated, user, signOut } = useAuth();
+  const navigate = useNavigate();
+
+  const closeMobileMenu = () => setMobileMenuOpen(false);
+
+  const handleSignOut = () => {
+    signOut();
+    closeMobileMenu();
+    navigate('/');
+  };
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          {/* Logo */}
-          <div className="shrink-0">
-            <Link to="/" className="text-2xl font-semibold text-gray-900">ShewaCraft </Link>
-          </div>
+          <Link
+            to="/"
+            className="shrink-0 text-2xl font-semibold text-gray-900 tracking-tight"
+            onClick={closeMobileMenu}
+          >
+            ShewaCraft
+          </Link>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-8">
-            <Link to="/" className="text-gray-700 hover:text-gray-900 transition">
-              Home
-            </Link>
-            <Link to="/products" className="text-gray-700 hover:text-gray-900 transition">
-              Products
-            </Link>
-            <Link to="/orders" className="text-gray-700 hover:text-gray-900 transition">
-              Orders
-            </Link>
-            <Link to="/about" className="text-gray-700 hover:text-gray-900 transition">
-              About
-            </Link>
+          <nav className="hidden md:flex items-center space-x-8" aria-label="Main">
+            {navItems.map((item) => (
+              <NavLink key={item.to} to={item.to} end={item.end} className={navLinkClass}>
+                {item.label}
+              </NavLink>
+            ))}
+            {isAuthenticated &&
+              authNavItems.map((item) => (
+                <NavLink key={item.to} to={item.to} className={navLinkClass}>
+                  {item.label}
+                </NavLink>
+              ))}
+            {user?.role === 'admin' && (
+              <NavLink to="/admin" className={navLinkClass}>
+                Admin
+              </NavLink>
+            )}
           </nav>
 
-          {/* Right Actions */}
-          <div className="flex items-center space-x-4">
-            {/* Search always visible */}
-            <button className="text-gray-700 hover:text-gray-900 transition">
-              <Search className="w-5 h-5" />
-            </button>
+          <div className="flex items-center space-x-3 sm:space-x-4">
+            <Link
+              to={isAuthenticated ? '/cart' : '/auth/signin'}
+              state={isAuthenticated ? undefined : { from: { pathname: '/cart' } }}
+              className="relative text-gray-700 hover:text-gray-900 transition"
+              aria-label={isAuthenticated ? 'Shopping cart' : 'Sign in to view cart'}
+            >
+              <ShoppingCart className="w-5 h-5" />
+              <span className="absolute -top-1.5 -right-1.5 bg-gray-900 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center border-2 border-white">
+                0
+              </span>
+            </Link>
 
-            {!isAuthenticated ? (
-              /* BEFORE SIGN IN */
+            {isAuthenticated ? (
               <>
-                <button
-                  className="text-gray-700 hover:text-gray-900 transition text-sm"
-                  onClick={() => setIsAuthenticated(true)}
+                <Link
+                  to="/messages"
+                  className="relative text-gray-700 hover:text-gray-900 transition"
+                  aria-label="Messages"
                 >
-                  <Link to="/auth/signin">Sign In</Link>
-                </button>
+                  <Mail className="w-5 h-5" />
+                  <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center border-2 border-white">
+                    1
+                  </span>
+                </Link>
                 <button
-                  className="px-4 py-1 bg-gray-900 text-white text-sm hover:bg-gray-800 transition"
-                  onClick={() => setIsAuthenticated(true)}
+                  type="button"
+                  onClick={handleSignOut}
+                  className="hidden sm:flex items-center gap-1.5 text-sm text-gray-700 hover:text-gray-900 transition"
+                  aria-label="Sign out"
                 >
-                  <Link to="/auth/signup">Sign Up</Link>
+                  <LogOut className="w-4 h-4" />
+                  <span>Sign out</span>
                 </button>
               </>
             ) : (
-              /* AFTER SIGN IN */
-              <>
-                <button className="text-gray-700 hover:text-gray-900 transition">
-                  <User className="w-5 h-5" />
-                </button>
-
-                <button className="text-gray-700 hover:text-gray-900 transition relative">
-                  <Link to="/cart">
-                    <ShoppingCart className="w-5 h-5" />
-                    <span className="absolute -top-1.5 -right-1.5 bg-gray-900 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center border-2 border-white">
-                      0
-                    </span>
-                  </Link>
-                </button>
-
-                <button className="text-gray-700 hover:text-gray-900 transition relative">
-                  <Link to="/messages"> {/*edit this latter*/}
-                    <Mail className="w-5 h-5" />
-                    <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center border-2 border-white">
-                      1
-                    </span>
-                  </Link>
-                </button>
-              </>
+              <div className="hidden sm:flex items-center space-x-3">
+                <Link
+                  to="/auth/signin"
+                  className="text-sm text-gray-700 hover:text-gray-900 transition"
+                >
+                  Sign In
+                </Link>
+                <Link
+                  to="/auth/signup"
+                  className="px-4 py-1.5 bg-gray-900 text-white text-sm hover:bg-gray-800 transition"
+                >
+                  Sign Up
+                </Link>
+              </div>
             )}
 
-            {/* Mobile menu */}
             <button
-              className="md:hidden text-gray-700"
+              type="button"
+              className="md:hidden text-gray-700 hover:text-gray-900 transition"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              aria-expanded={mobileMenuOpen}
+              aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
             >
-              <Menu className="w-6 h-6" />
+              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
           </div>
-
         </div>
 
-        {/* Mobile Menu */}
         {mobileMenuOpen && (
           <div className="md:hidden py-4 border-t border-gray-200">
-            <nav className="flex flex-col space-y-3">
-              <Link to="/" className="text-gray-700 hover:text-gray-900 transition">
-                Home
-              </Link>
-              <Link to="/products" className="text-gray-700 hover:text-gray-900 transition">
-                Products
-              </Link>
-              <Link to="/orders" className="text-gray-700 hover:text-gray-900 transition">
-                Orders
-              </Link>
-              <Link to="/about" className="text-gray-700 hover:text-gray-900 transition">
-                About
-              </Link>
+            <nav className="flex flex-col space-y-3" aria-label="Mobile">
+              {navItems.map((item) => (
+                <NavLink
+                  key={item.to}
+                  to={item.to}
+                  end={item.end}
+                  className={navLinkClass}
+                  onClick={closeMobileMenu}
+                >
+                  {item.label}
+                </NavLink>
+              ))}
+              {isAuthenticated &&
+                authNavItems.map((item) => (
+                  <NavLink
+                    key={item.to}
+                    to={item.to}
+                    className={navLinkClass}
+                    onClick={closeMobileMenu}
+                  >
+                    {item.label}
+                  </NavLink>
+                ))}
+              {user?.role === 'admin' && (
+                <NavLink to="/admin" className={navLinkClass} onClick={closeMobileMenu}>
+                  Admin
+                </NavLink>
+              )}
+              {isAuthenticated ? (
+                <>
+                  <NavLink
+                    to="/messages"
+                    className={navLinkClass}
+                    onClick={closeMobileMenu}
+                  >
+                    Messages
+                  </NavLink>
+                  <button
+                    type="button"
+                    onClick={handleSignOut}
+                    className="text-left text-gray-700 hover:text-gray-900 transition"
+                  >
+                    Sign out
+                  </button>
+                </>
+              ) : (
+                <>
+                  <NavLink
+                    to="/auth/signin"
+                    className={navLinkClass}
+                    onClick={closeMobileMenu}
+                  >
+                    Sign In
+                  </NavLink>
+                  <Link
+                    to="/auth/signup"
+                    onClick={closeMobileMenu}
+                    className="inline-flex w-fit px-4 py-2 bg-gray-900 text-white text-sm hover:bg-gray-800 transition"
+                  >
+                    Sign Up
+                  </Link>
+                </>
+              )}
             </nav>
           </div>
         )}

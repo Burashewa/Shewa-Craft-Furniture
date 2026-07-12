@@ -24,7 +24,7 @@ export function Hero({ onAboutClick }) {
             Discover premium furniture that combines comfort, style, and quality craftsmanship for every room in your home.
           </p>
           <div className="flex flex-col sm:flex-row gap-4">
-            <Link to="../../Products" className="px-8 py-4 bg-white text-gray-900 hover:bg-gray-100 transition flex items-center justify-center gap-2">
+            <Link to="/products" className="px-8 py-4 bg-white text-gray-900 hover:bg-gray-100 transition flex items-center justify-center gap-2">
               Shop Collection
               <ArrowRight className="w-5 h-5" />
             </Link>

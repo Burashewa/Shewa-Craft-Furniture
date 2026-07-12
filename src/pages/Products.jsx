@@ -1,11 +1,13 @@
-import { Header } from "../components/Header";
-import { ProductsPage } from "../components/ProductsPage";
+import { Header } from '../components/Header';
+import { Footer } from '../components/Footer';
+import { CatalogPage } from '../components/products/CatalogPage';
 
 export default function Products() {
   return (
     <>
       <Header />
-      <ProductsPage />
+      <CatalogPage />
+      <Footer />
     </>
   );
 }

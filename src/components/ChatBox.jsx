@@ -1,11 +1,7 @@
 import { motion } from 'framer-motion';
 import { useState, useRef, useEffect } from 'react';
-import { X, Send, Paperclip, Smile } from 'lucide-react';
-import ownerAvatar from "../assets/ShewaCraft_Logo.png";
-
-
-const CurrentTimestamp = new Date(Date.now() - 60000);
-
+import { X, Send } from 'lucide-react';
+import { OWNER_RESPONSES } from '../data/messages';
 
 export function ChatBox({ product, onClose }) {
   const [messages, setMessages] = useState([
@@ -13,100 +9,86 @@ export function ChatBox({ product, onClose }) {
       id: 1,
       sender: 'owner',
       text: `Hi! Thanks for your interest in the ${product.name}. How can I help you today?`,
-      timestamp: CurrentTimestamp
-    }
+      timestamp: new Date(Date.now() - 60000),
+    },
   ]);
   const [inputValue, setInputValue] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef(null);
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
-
   useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages, isTyping]);
 
   const handleSendMessage = (e) => {
     e.preventDefault();
     if (!inputValue.trim()) return;
 
     const newMessage = {
-      id: messages.length + 1,
+      id: Date.now(),
       sender: 'user',
-      text: inputValue,
-      timestamp: new Date()
+      text: inputValue.trim(),
+      timestamp: new Date(),
     };
 
-    setMessages([...messages, newMessage]);
+    setMessages((prev) => [...prev, newMessage]);
     setInputValue('');
-
-    // Simulate owner response
     setIsTyping(true);
+
     setTimeout(() => {
-      const responses = [
-        "That's a great question! Let me provide you with more details.",
-        "I'd be happy to help you with that. This piece is one of our bestsellers!",
-        "Absolutely! I can arrange that for you.",
-        "Yes, we have that available. Would you like to know more about the dimensions?",
-        "Great choice! This item is currently in stock and ready to ship."
-      ];
-      
-      const ownerResponse = {
-        id: messages.length + 2,
-        sender: 'owner',
-        text: responses[Math.floor(Math.random() * responses.length)],
-        timestamp: new Date()
-      };
-
-      setMessages((prev) => [...prev, ownerResponse]);
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: Date.now() + 1,
+          sender: 'owner',
+          text: OWNER_RESPONSES[Math.floor(Math.random() * OWNER_RESPONSES.length)],
+          timestamp: new Date(),
+        },
+      ]);
       setIsTyping(false);
-    }, 1500);
+    }, 1200);
   };
 
-  const formatTime = (date) => {
-    return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
-  };
+  const formatTime = (date) =>
+    date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
 
   return (
-    <motion.div className="fixed bottom-4 right-4 z-50 w-full max-w-md"
+    <motion.div
+      className="fixed bottom-4 right-4 z-50 w-[calc(100%-2rem)] max-w-md"
       initial={{ opacity: 0, y: 50, scale: 0.95 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: 50, scale: 0.95 }}
       transition={{ duration: 0.3 }}
-      >
-      <div className="bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-200">
-        {/* Chat Header */}
-        <div className="bg-gray-900 text-white p-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <img
-                src={ownerAvatar}
-                alt={product.owner.name}
-                className="w-10 h-10 rounded-full object-cover"
-              />
-              <div>
-                <h3 className="text-sm">ShewaCraft Furniture</h3>
-                <p className="text-xs text-gray-300">Typically replies {product.owner.responseTime.toLowerCase()}</p>
-              </div>
+    >
+      <div className="bg-white border border-gray-200 shadow-xl overflow-hidden">
+        <div className="bg-gray-900 text-white p-4 flex items-center justify-between">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-10 h-10 bg-white/10 flex items-center justify-center text-sm shrink-0">
+              SC
             </div>
-            <button
-              onClick={onClose}
-              className="w-8 h-8 hover:bg-white/10 rounded-full flex items-center justify-center transition"
-            >
-              <X className="w-5 h-5" />
-            </button>
+            <div className="min-w-0">
+              <h3 className="text-sm truncate">ShewaCraft Support</h3>
+              <p className="text-xs text-white/70 truncate">
+                Typically replies {product.owner?.responseTime?.toLowerCase() || 'soon'}
+              </p>
+            </div>
           </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="w-9 h-9 hover:bg-white/10 flex items-center justify-center transition shrink-0"
+            aria-label="Close chat"
+          >
+            <X className="w-5 h-5" />
+          </button>
         </div>
 
-        {/* Product Info */}
         <div className="p-3 bg-gray-50 border-b border-gray-200">
           <div className="flex gap-3">
             <img
               src={product.images[0]}
               alt={product.name}
-              className="w-16 h-16 rounded-lg object-cover"
+              className="w-14 h-14 object-cover bg-gray-100"
             />
             <div className="flex-1 min-w-0">
               <p className="text-sm text-gray-900 truncate">{product.name}</p>
@@ -115,15 +97,14 @@ export function ChatBox({ product, onClose }) {
           </div>
         </div>
 
-        {/* Messages */}
-        <div className="h-96 overflow-y-auto p-4 space-y-4 bg-gray-50">
+        <div className="h-80 overflow-y-auto p-4 space-y-3 bg-gray-50">
           {messages.map((message) => (
             <div
               key={message.id}
               className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
             >
               <div
-                className={`max-w-[75%] rounded-2xl px-4 py-2 ${
+                className={`max-w-[80%] px-3 py-2 ${
                   message.sender === 'user'
                     ? 'bg-gray-900 text-white'
                     : 'bg-white text-gray-900 border border-gray-200'
@@ -132,7 +113,7 @@ export function ChatBox({ product, onClose }) {
                 <p className="text-sm">{message.text}</p>
                 <p
                   className={`text-xs mt-1 ${
-                    message.sender === 'user' ? 'text-gray-300' : 'text-gray-500'
+                    message.sender === 'user' ? 'text-white/60' : 'text-gray-500'
                   }`}
                 >
                   {formatTime(message.timestamp)}
@@ -143,74 +124,58 @@ export function ChatBox({ product, onClose }) {
 
           {isTyping && (
             <div className="flex justify-start">
-              <div className="bg-white border border-gray-200 rounded-2xl px-4 py-3">
+              <div className="bg-white border border-gray-200 px-3 py-2">
                 <div className="flex gap-1">
-                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" />
+                  <div
+                    className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                    style={{ animationDelay: '150ms' }}
+                  />
+                  <div
+                    className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                    style={{ animationDelay: '300ms' }}
+                  />
                 </div>
               </div>
             </div>
           )}
-
           <div ref={messagesEndRef} />
         </div>
 
-        {/* Input */}
-        <form onSubmit={handleSendMessage} className="p-4 bg-white border-t border-gray-200">
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              className="w-9 h-9 flex items-center justify-center text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full transition"
-            >
-              <Paperclip className="w-5 h-5" />
-            </button>
-            <button
-              type="button"
-              className="w-9 h-9 flex items-center justify-center text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full transition"
-            >
-              <Smile className="w-5 h-5" />
-            </button>
+        <div className="p-3 bg-white border-t border-gray-200">
+          <div className="flex flex-wrap gap-2 mb-3">
+            {[
+              'Is this still available?',
+              'More details?',
+              'Delivery time?',
+            ].map((label) => (
+              <button
+                key={label}
+                type="button"
+                onClick={() => setInputValue(label)}
+                className="px-2.5 py-1 border border-gray-300 text-xs text-gray-700 hover:bg-gray-50 transition"
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+          <form onSubmit={handleSendMessage} className="flex items-center gap-2">
             <input
               type="text"
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               placeholder="Type your message..."
-              className="flex-1 px-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+              className="flex-1 px-3 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-900"
             />
             <button
               type="submit"
               disabled={!inputValue.trim()}
-              className="w-9 h-9 flex items-center justify-center bg-gray-900 text-white rounded-full hover:bg-gray-800 transition disabled:bg-gray-300 disabled:cursor-not-allowed"
+              className="px-3 py-2 bg-gray-900 text-white hover:bg-gray-800 transition disabled:bg-gray-300 disabled:cursor-not-allowed"
+              aria-label="Send message"
             >
-              <Send className="w-5 h-5" />
+              <Send className="w-4 h-4" />
             </button>
-          </div>
-        </form>
-
-        {/* Quick Replies */}
-        <div className="p-3 bg-gray-50 border-t border-gray-200">
-          <p className="text-xs text-gray-500 mb-2">Quick replies:</p>
-          <div className="flex flex-wrap gap-2">
-            <button
-              onClick={() => setInputValue('Is this item still available?')}
-              className="px-3 py-1 bg-white border border-gray-300 rounded-full text-xs text-gray-700 hover:bg-gray-100 transition"
-            >
-              Is this available?
-            </button>
-            <button
-              onClick={() => setInputValue('Can you provide more details about the dimensions?')}
-              className="px-3 py-1 bg-white border border-gray-300 rounded-full text-xs text-gray-700 hover:bg-gray-100 transition"
-            >
-              More details?
-            </button>
-            <button
-              onClick={() => setInputValue('What is the delivery timeframe?')}
-              className="px-3 py-1 bg-white border border-gray-300 rounded-full text-xs text-gray-700 hover:bg-gray-100 transition"
-            >
-              Delivery time?
-            </button>
-          </div>
+          </form>
         </div>
       </div>
     </motion.div>
