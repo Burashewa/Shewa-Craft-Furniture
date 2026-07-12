@@ -23,10 +23,10 @@ export function Header() {
             <Link to="/products" className="text-gray-700 hover:text-gray-900 transition">
               Products
             </Link>
-            <Link to="../orders" className="text-gray-700 hover:text-gray-900 transition">
+            <Link to="/orders" className="text-gray-700 hover:text-gray-900 transition">
               Orders
             </Link>
-            <Link to="../about" className="text-gray-700 hover:text-gray-900 transition">
+            <Link to="/about" className="text-gray-700 hover:text-gray-900 transition">
               About
             </Link>
           </nav>
@@ -45,13 +45,13 @@ export function Header() {
                   className="text-gray-700 hover:text-gray-900 transition text-sm"
                   onClick={() => setIsAuthenticated(true)}
                 >
-                  <Link to="../auth/signin">Sign In</Link>
+                  <Link to="/auth/signin">Sign In</Link>
                 </button>
                 <button
                   className="px-4 py-1 bg-gray-900 text-white text-sm hover:bg-gray-800 transition"
                   onClick={() => setIsAuthenticated(true)}
                 >
-                  <Link to="../auth/signup">Sign Up</Link>
+                  <Link to="/auth/signup">Sign Up</Link>
                 </button>
               </>
             ) : (
@@ -62,7 +62,7 @@ export function Header() {
                 </button>
 
                 <button className="text-gray-700 hover:text-gray-900 transition relative">
-                  <Link to="../cart">
+                  <Link to="/cart">
                     <ShoppingCart className="w-5 h-5" />
                     <span className="absolute -top-1.5 -right-1.5 bg-gray-900 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center border-2 border-white">
                       0
@@ -99,13 +99,13 @@ export function Header() {
               <Link to="/" className="text-gray-700 hover:text-gray-900 transition">
                 Home
               </Link>
-              <Link to="/living-room" className="text-gray-700 hover:text-gray-900 transition">
+              <Link to="/products" className="text-gray-700 hover:text-gray-900 transition">
                 Products
               </Link>
-              <Link to="../orders" className="text-gray-700 hover:text-gray-900 transition">
+              <Link to="/orders" className="text-gray-700 hover:text-gray-900 transition">
                 Orders
               </Link>
-              <Link to="../about" className="text-gray-700 hover:text-gray-900 transition">
+              <Link to="/about" className="text-gray-700 hover:text-gray-900 transition">
                 About
               </Link>
             </nav>

@@ -66,6 +66,18 @@ export function AdminSidebar({ currentView, onViewChange }) {
 
   return (
     <>
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-50 h-16 bg-gray-800 text-white border-b border-gray-700 flex items-center justify-between px-4">
+        <h1 className="text-lg font-medium">Admin Dashboard</h1>
+        <button
+          type="button"
+          onClick={() => setMobileMenuOpen((prev) => !prev)}
+          className="p-2 rounded-lg hover:bg-gray-700 transition"
+          aria-label={mobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
+        >
+          {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+        </button>
+      </div>
+
       <div className="hidden lg:flex lg:flex-col lg:w-64 bg-gray-800 text-white">
         <SidebarContent
           currentView={currentView}

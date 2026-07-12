@@ -10,7 +10,7 @@ export function AdminDashboard() {
   const [currentView, setCurrentView] = useState('overview');
 
   return (
-    <div className="flex h-screen bg-gray-100">
+    <div className="flex h-screen bg-gray-50">
       <AdminSidebar currentView={currentView} onViewChange={setCurrentView} />
       
       <div className="flex-1 overflow-auto">

@@ -153,7 +153,7 @@ export function ProductsManagement() {
       <div className="bg-white border-b border-gray-200 p-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl text-gray-900">Products Management</h1>
+            <h1 className="text-3xl text-gray-900">Product Management</h1>
             <p className="text-gray-600 mt-1">Manage your furniture inventory</p>
           </div>
           <button
@@ -266,7 +266,7 @@ export function ProductsManagement() {
       {/* Add/Edit Modal */}
       {showAddModal && (
         <div className="fixed inset-0 z-50 bg-black/50 flex items-start md:items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white rounded-lg max-w-2xl w-full my-8 max-h-[100vh] overflow-y-auto">
+          <div className="bg-white rounded-lg max-w-2xl w-full my-8 max-h-screen overflow-y-auto">
             <div className="p-6 border-b border-gray-200 flex items-center justify-between">
               <h2 className="text-2xl text-gray-900">
                 {editingProduct ? 'Edit Product' : 'Add New Product'}

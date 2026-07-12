@@ -36,9 +36,9 @@ export default function Orders() {
   return (
   <>
   <Header />
-   <main className="pt-20">
-      <div className="bg-white border-b border-gray-200 p-6">
-        <div className="flex items-center justify-between">
+   <main className="pt-16 min-h-screen bg-gray-50">
+      <div className="bg-white border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex items-center justify-between">
           <div>
             <h1 className="text-3xl text-gray-900">My Orders</h1>
             <p className="text-gray-600 mt-1">Track your recent purchases and order details</p>
@@ -46,7 +46,7 @@ export default function Orders() {
         </div>
       </div>
 
-      <div className="p-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="grid gap-4">
           {orders.map((order) => {
             const product = products.find((p) => p.id === order.productId) || {};
@@ -54,7 +54,7 @@ export default function Orders() {
             const name = product.name || 'Unknown product';
             const formattedDate = new Date(order.date).toLocaleDateString();
             return (
-              <div key={order.id} className="bg-white rounded-lg shadow p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div key={order.id} className="bg-white rounded-lg border border-gray-200 shadow-sm p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div className="flex items-start sm:items-center gap-4">
                       <img src={image} alt={name} className="w-24 h-24 sm:w-20 sm:h-20 object-cover rounded" />
                       <div>
@@ -82,7 +82,7 @@ export default function Orders() {
                         {order.status}
                       </span>
                     </div>
-                    <button onClick={() => setSelectedOrder(order)} className="text-blue-600 hover:text-blue-900 ml-2">
+                    <button onClick={() => setSelectedOrder(order)} className="inline-flex items-center justify-center p-2 rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition ml-2" aria-label={`View details for order ${order.id}`}>
                       <Eye className="w-5 h-5" />
                     </button>
                   </div>

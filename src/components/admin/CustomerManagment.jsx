@@ -117,7 +117,7 @@ export function CustomersManagement() {
   <div className="bg-white border-b border-gray-200 p-6">
     <div className="flex items-center justify-between">
       <div>
-        <h1 className="text-3xl text-gray-900">Customers Management</h1>
+        <h1 className="text-3xl text-gray-900">Customer Management</h1>
         <p className="text-gray-600 mt-1">Manage your customer base</p>
       </div>
     </div>

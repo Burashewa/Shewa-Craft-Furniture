@@ -4,7 +4,7 @@ import { Header } from '../components/Header';
 
 export default function AboutPage() {
   return (
-    <div>
+    <div className="min-h-screen bg-gray-50">
         <Header />
         <About />
     </div>

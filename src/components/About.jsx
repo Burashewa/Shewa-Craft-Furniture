@@ -1,8 +1,9 @@
 import { ArrowRight } from "lucide-react";
+import { Link } from "react-router-dom";
 
 export function About() {
   return (
-    <main className="mt-16">
+    <main className="pt-16">
       {/* Hero */}
       <section className="relative h-[60vh] overflow-hidden">
         <img
@@ -104,13 +105,13 @@ export function About() {
             Discover furniture designed to elevate your living and
             working spaces with comfort and character.
           </p>
-          <a
-            href="../../Products"
+          <Link
+            to="/products"
             className="inline-flex items-center gap-2 px-8 py-4 bg-white text-gray-900 hover:bg-gray-100 transition"
           >
             Explore Collection
             <ArrowRight className="w-5 h-5" />
-          </a>
+          </Link>
         </div>
       </section>
     </main>

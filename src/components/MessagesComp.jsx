@@ -77,7 +77,8 @@ export default function MessagesComp({ product = defaultProduct }) {
   };
 
   return (
-    <div className="flex flex-col h-screen pt-20 px-4 sm:px-8 lg:px-16">
+    <div className="min-h-screen bg-gray-50 pt-20 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-5xl mx-auto h-[calc(100vh-6rem)] flex flex-col">
       {/* Header */}
       <div className="bg-gray-900 text-white p-4 flex items-center gap-3 rounded-t-lg shadow-md">
         <img
@@ -92,7 +93,7 @@ export default function MessagesComp({ product = defaultProduct }) {
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50 border border-gray-200 rounded-b-lg shadow-md">
+      <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50 border-x border-gray-200">
         {messages.map((message) => (
           <div
             key={message.id}
@@ -133,7 +134,7 @@ export default function MessagesComp({ product = defaultProduct }) {
       </div>
 
       {/* Input */}
-      <form onSubmit={handleSendMessage} className="p-4 bg-white border-t border-gray-200 rounded-b-lg shadow-md">
+      <form onSubmit={handleSendMessage} className="p-4 bg-white border border-gray-200 rounded-b-lg">
         <div className="flex items-center gap-2">
           <button
             type="button"
@@ -163,6 +164,7 @@ export default function MessagesComp({ product = defaultProduct }) {
           </button>
         </div>
       </form>
+      </div>
     </div>
   );
 }
