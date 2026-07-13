@@ -1,5 +1,6 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import {
   X,
   Heart,
@@ -13,12 +14,58 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import { ChatBox } from './ChatBox';
+import { useAuth } from '../context/AuthContext';
+import { useShop } from '../context/ShopContext';
+import { useToast } from '../context/ToastContext';
 
 export function ProductDetailView({ product, onClose }) {
+  const { isAuthenticated } = useAuth();
+  const { addToCart, toggleFavorite, isFavorite } = useShop();
+  const { showToast } = useToast();
   const [selectedImage, setSelectedImage] = useState(0);
   const [selectedColor, setSelectedColor] = useState(product.colors?.[0] || '');
   const [quantity, setQuantity] = useState(1);
   const [isChatOpen, setIsChatOpen] = useState(false);
+
+  const canAct = isAuthenticated;
+  const cartDisabled = !canAct || !product.inStock;
+  const favorited = isFavorite(product.id);
+
+  const handleAddToCart = () => {
+    if (cartDisabled) return;
+
+    const { addedAsNew } = addToCart({
+      product,
+      quantity,
+      color: selectedColor,
+    });
+
+    showToast({
+      type: 'success',
+      title: addedAsNew ? 'Added to cart' : 'Cart updated',
+      message: addedAsNew
+        ? `${product.name} was added to your cart.`
+        : `${product.name} quantity was updated in your cart.`,
+      actionLabel: 'View cart',
+      actionTo: '/cart',
+    });
+  };
+
+  const handleSaveFavorite = () => {
+    if (!canAct) return;
+
+    const { wasAdded } = toggleFavorite(product);
+
+    showToast({
+      type: 'favorite',
+      title: wasAdded ? 'Saved to favorites' : 'Removed from favorites',
+      message: wasAdded
+        ? `${product.name} was saved to your favorites.`
+        : `${product.name} was removed from your favorites.`,
+      actionLabel: wasAdded ? 'View favorites' : undefined,
+      actionTo: wasAdded ? '/favorites' : undefined,
+    });
+  };
 
   /* ---------------- BODY SCROLL LOCK ---------------- */
   useEffect(() => {
@@ -253,25 +300,51 @@ export function ProductDetailView({ product, onClose }) {
                   {/* Action Buttons */}
                   <div className="space-y-3 mb-6">
                     <button
-                      disabled={!product.inStock}
+                      type="button"
+                      disabled={cartDisabled}
+                      onClick={handleAddToCart}
                       className="w-full px-6 py-4 bg-gray-900 text-white hover:bg-gray-800 transition disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                     >
                       <ShoppingCart className="w-5 h-5" />
                       Add to Cart
                     </button>
                     <div className="grid grid-cols-2 gap-3">
-                      <button className="px-6 py-3 border border-gray-900 text-gray-900 hover:bg-gray-50 transition flex items-center justify-center gap-2">
-                        <Heart className="w-5 h-5" />
-                        Save
+                      <button
+                        type="button"
+                        disabled={!canAct}
+                        onClick={handleSaveFavorite}
+                        className={`px-6 py-3 border transition flex items-center justify-center gap-2 disabled:border-gray-300 disabled:text-gray-400 disabled:hover:bg-transparent disabled:cursor-not-allowed ${
+                          favorited
+                            ? 'border-gray-900 bg-gray-900 text-white hover:bg-gray-800'
+                            : 'border-gray-900 text-gray-900 hover:bg-gray-50'
+                        }`}
+                      >
+                        <Heart className={`w-5 h-5 ${favorited ? 'fill-current' : ''}`} />
+                        {favorited ? 'Saved' : 'Save'}
                       </button>
                       <button
-                        onClick={() => setIsChatOpen(true)}
-                        className="px-6 py-3 border border-gray-900 text-gray-900 hover:bg-gray-50 transition flex items-center justify-center gap-2"
+                        type="button"
+                        disabled={!canAct}
+                        onClick={() => canAct && setIsChatOpen(true)}
+                        className="px-6 py-3 border border-gray-900 text-gray-900 hover:bg-gray-50 transition flex items-center justify-center gap-2 disabled:border-gray-300 disabled:text-gray-400 disabled:hover:bg-transparent disabled:cursor-not-allowed"
                       >
                         <MessageCircle className="w-5 h-5" />
                         Chat with Owner
                       </button>
                     </div>
+                    {!canAct && (
+                      <p className="text-sm text-gray-600 text-center">
+                        <Link
+                          to="/auth/signin"
+                          state={{ from: { pathname: '/products' } }}
+                          className="text-gray-900 underline underline-offset-2 hover:no-underline"
+                          onClick={onClose}
+                        >
+                          Sign in
+                        </Link>{' '}
+                        to add to cart, save, or chat with support.
+                      </p>
+                    )}
                   </div>
 
                   {/* Features */}

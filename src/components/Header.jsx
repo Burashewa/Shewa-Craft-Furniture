@@ -1,7 +1,8 @@
-import { ShoppingCart, Mail, Menu, X, LogOut } from 'lucide-react';
+import { ShoppingCart, Mail, Menu, X, LogOut, Heart } from 'lucide-react';
 import { useState } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useShop } from '../context/ShopContext';
 
 const navLinkClass = ({ isActive }) =>
   `transition ${isActive ? 'text-gray-900 font-medium' : 'text-gray-700 hover:text-gray-900'}`;
@@ -17,14 +18,15 @@ const authNavItems = [{ to: '/orders', label: 'Orders' }];
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { isAuthenticated, user, signOut } = useAuth();
+  const { cartCount, favoritesCount } = useShop();
   const navigate = useNavigate();
 
   const closeMobileMenu = () => setMobileMenuOpen(false);
 
   const handleSignOut = () => {
-    signOut();
     closeMobileMenu();
-    navigate('/');
+    navigate('/', { replace: true });
+    signOut();
   };
 
   return (
@@ -59,20 +61,32 @@ export function Header() {
           </nav>
 
           <div className="flex items-center space-x-3 sm:space-x-4">
-            <Link
-              to={isAuthenticated ? '/cart' : '/auth/signin'}
-              state={isAuthenticated ? undefined : { from: { pathname: '/cart' } }}
-              className="relative text-gray-700 hover:text-gray-900 transition"
-              aria-label={isAuthenticated ? 'Shopping cart' : 'Sign in to view cart'}
-            >
-              <ShoppingCart className="w-5 h-5" />
-              <span className="absolute -top-1.5 -right-1.5 bg-gray-900 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center border-2 border-white">
-                0
-              </span>
-            </Link>
-
             {isAuthenticated ? (
               <>
+                <Link
+                  to="/favorites"
+                  className="relative text-gray-700 hover:text-gray-900 transition"
+                  aria-label="Favorites"
+                >
+                  <Heart className="w-5 h-5" />
+                  {favoritesCount > 0 && (
+                    <span className="absolute -top-1.5 -right-1.5 bg-gray-900 text-white text-[10px] font-bold rounded-full min-w-4 h-4 px-0.5 flex items-center justify-center border-2 border-white">
+                      {favoritesCount > 99 ? '99+' : favoritesCount}
+                    </span>
+                  )}
+                </Link>
+
+                <Link
+                  to="/cart"
+                  className="relative text-gray-700 hover:text-gray-900 transition"
+                  aria-label="Shopping cart"
+                >
+                  <ShoppingCart className="w-5 h-5" />
+                  <span className="absolute -top-1.5 -right-1.5 bg-gray-900 text-white text-[10px] font-bold rounded-full min-w-4 h-4 px-0.5 flex items-center justify-center border-2 border-white">
+                    {cartCount > 99 ? '99+' : cartCount}
+                  </span>
+                </Link>
+
                 <Link
                   to="/messages"
                   className="relative text-gray-700 hover:text-gray-900 transition"
@@ -83,6 +97,7 @@ export function Header() {
                     1
                   </span>
                 </Link>
+
                 <button
                   type="button"
                   onClick={handleSignOut}
@@ -154,6 +169,13 @@ export function Header() {
               )}
               {isAuthenticated ? (
                 <>
+                  <NavLink
+                    to="/favorites"
+                    className={navLinkClass}
+                    onClick={closeMobileMenu}
+                  >
+                    Favorites{favoritesCount > 0 ? ` (${favoritesCount})` : ''}
+                  </NavLink>
                   <NavLink
                     to="/messages"
                     className={navLinkClass}

@@ -8,6 +8,7 @@ import AboutPage from './pages/AboutPage';
 import { AdminDashboard } from './pages/AdminDashboard';
 import Orders from './pages/Orders';
 import Messages from './pages/Messages';
+import Favorites from './pages/Favorites';
 import { ProtectedRoute } from './components/ProtectedRoute';
 
 function App() {
@@ -39,6 +40,14 @@ function App() {
         element={
           <ProtectedRoute>
             <Orders />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/favorites"
+        element={
+          <ProtectedRoute>
+            <Favorites />
           </ProtectedRoute>
         }
       />

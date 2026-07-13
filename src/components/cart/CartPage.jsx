@@ -3,33 +3,24 @@ import { Link } from 'react-router-dom';
 import { ShoppingBag, Truck } from 'lucide-react';
 import { ChatBox } from '../ChatBox';
 import { CheckoutModal } from '../CheckoutModal';
-import {
-  initialCartItems,
-  initialSavedItems,
-  FREE_SHIPPING_THRESHOLD,
-  calcCartTotals,
-} from '../../data/cart';
+import { initialSavedItems, FREE_SHIPPING_THRESHOLD, calcCartTotals } from '../../data/cart';
+import { useShop } from '../../context/ShopContext';
 import { CartHeader } from './CartHeader';
 import { CartItem } from './CartItem';
 import { SavedItem } from './SavedItem';
 import { OrderSummary } from './OrderSummary';
 
 export function CartPage() {
-  const [cartItems, setCartItems] = useState(initialCartItems);
+  const {
+    cartItems,
+    setCartItems,
+    updateQuantity,
+    removeFromCart,
+    cartCount,
+  } = useShop();
   const [savedItems, setSavedItems] = useState(initialSavedItems);
   const [chatItem, setChatItem] = useState(null);
   const [showCheckout, setShowCheckout] = useState(false);
-
-  const updateQuantity = (id, newQuantity) => {
-    if (newQuantity < 1) return;
-    setCartItems((items) =>
-      items.map((item) => (item.id === id ? { ...item, quantity: newQuantity } : item))
-    );
-  };
-
-  const removeItem = (id) => {
-    setCartItems((items) => items.filter((item) => item.id !== id));
-  };
 
   const saveForLater = (item) => {
     setSavedItems((items) => [
@@ -43,7 +34,7 @@ export function CartPage() {
         inStock: item.inStock,
       },
     ]);
-    removeItem(item.id);
+    removeFromCart(item.id);
   };
 
   const moveToCart = (savedItem) => {
@@ -77,7 +68,7 @@ export function CartPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 pt-16">
-      <CartHeader itemCount={cartItems.length} />
+      <CartHeader itemCount={cartCount} />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-6">
@@ -126,7 +117,7 @@ export function CartPage() {
                       key={item.id}
                       item={item}
                       onUpdateQuantity={updateQuantity}
-                      onRemove={removeItem}
+                      onRemove={removeFromCart}
                       onSaveForLater={saveForLater}
                       onChat={setChatItem}
                     />
@@ -156,7 +147,7 @@ export function CartPage() {
 
           <div className="lg:col-span-1">
             <OrderSummary
-              itemCount={cartItems.length}
+              itemCount={cartCount}
               subtotal={subtotal}
               shipping={shipping}
               tax={tax}

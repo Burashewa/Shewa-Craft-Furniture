@@ -65,9 +65,9 @@ export function AdminSidebar({ currentView, onViewChange }) {
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    signOut();
     setMobileMenuOpen(false);
     navigate('/', { replace: true });
+    signOut();
   };
 
   const menuItems = [
