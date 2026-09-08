@@ -1,4 +1,17 @@
-export const ORDER_STATUS_FLOW = ['pending', 'approved', 'shipped', 'delivered'];
+export const ORDER_STATUS_FLOW = [
+  'pending',
+  'approved',
+  'shipped',
+  'delivered',
+  'completed',
+];
+
+const emptyConfirmation = {
+  destinationConfirmedAt: null,
+  customerReceivedAt: null,
+  rating: null,
+  review: '',
+};
 
 export const orders = [
   {
@@ -11,6 +24,7 @@ export const orders = [
     shipping: 'Standard - 3-5 days',
     address: '123 Main St, City, Country',
     payment: { method: 'Card', last4: '4242' },
+    ...emptyConfirmation,
   },
   {
     id: 'ORD-1002',
@@ -22,6 +36,7 @@ export const orders = [
     shipping: 'Standard - 3-5 days',
     address: '123 Main St, City, Country',
     payment: { method: 'Card', last4: '4242' },
+    ...emptyConfirmation,
   },
   {
     id: 'ORD-1003',
@@ -33,6 +48,7 @@ export const orders = [
     shipping: 'Express - 1-2 days',
     address: '123 Main St, City, Country',
     payment: { method: 'Card', last4: '1111' },
+    ...emptyConfirmation,
   },
   {
     id: 'ORD-1004',
@@ -44,6 +60,10 @@ export const orders = [
     shipping: 'Standard - 3-5 days',
     address: '123 Main St, City, Country',
     payment: { method: 'Card', last4: '4242' },
+    destinationConfirmedAt: '2024-10-20',
+    customerReceivedAt: null,
+    rating: null,
+    review: '',
   },
   {
     id: 'ORD-1005',
@@ -55,6 +75,22 @@ export const orders = [
     shipping: 'Standard - 3-5 days',
     address: '123 Main St, City, Country',
     payment: { method: 'Card', last4: '1111' },
+    ...emptyConfirmation,
+  },
+  {
+    id: 'ORD-1006',
+    date: '2024-10-05',
+    status: 'completed',
+    productId: 4,
+    quantity: 1,
+    price: 459.0,
+    shipping: 'Standard - 3-5 days',
+    address: '123 Main St, City, Country',
+    payment: { method: 'Card', last4: '4242' },
+    destinationConfirmedAt: '2024-10-08',
+    customerReceivedAt: '2024-10-09',
+    rating: 5,
+    review: 'Solid build and arrived in great condition.',
   },
 ];
 
@@ -76,6 +112,8 @@ export function getStatusClasses(status) {
       return 'bg-sky-50 text-sky-800 border-sky-200';
     case 'delivered':
       return 'bg-violet-50 text-violet-800 border-violet-200';
+    case 'completed':
+      return 'bg-gray-900 text-white border-gray-900';
     default:
       return 'bg-gray-50 text-gray-700 border-gray-200';
   }
@@ -87,4 +125,27 @@ export function getOrderStatusSteps(status) {
     return ['pending', 'rejected'];
   }
   return ORDER_STATUS_FLOW;
+}
+
+export function hasOrderRating(order) {
+  return Number(order?.rating) >= 1;
+}
+
+export function canCustomerConfirmReceipt(order) {
+  return (order?.status || '').toLowerCase() === 'delivered';
+}
+
+export function canCustomerRate(order) {
+  return (order?.status || '').toLowerCase() === 'completed' && !hasOrderRating(order);
+}
+
+export function formatOrderStamp(value) {
+  if (!value) return '';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return String(value);
+  return date.toLocaleDateString(undefined, {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  });
 }

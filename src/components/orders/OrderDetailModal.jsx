@@ -1,13 +1,109 @@
-import { useEffect } from 'react';
-import { X } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Star, X } from 'lucide-react';
 import {
   ORDER_STATUS_FLOW,
+  canCustomerConfirmReceipt,
+  canCustomerRate,
+  formatOrderStamp,
   formatOrderStatus,
   getOrderStatusSteps,
   getStatusClasses,
+  hasOrderRating,
 } from '../../data/orders';
 
-export function OrderDetailModal({ order, product, onClose }) {
+function StarRatingInput({ value, onChange, labelledBy }) {
+  return (
+    <div className="flex items-center gap-1" role="radiogroup" aria-labelledby={labelledBy}>
+      {[1, 2, 3, 4, 5].map((star) => {
+        const selected = star <= value;
+        return (
+          <button
+            key={star}
+            type="button"
+            role="radio"
+            aria-checked={value === star}
+            aria-label={`${star} star${star === 1 ? '' : 's'}`}
+            onClick={() => onChange(star)}
+            className="p-1 text-gray-400 hover:text-gray-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900"
+          >
+            <Star
+              className={`w-7 h-7 ${selected ? 'fill-gray-900 text-gray-900' : ''}`}
+            />
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+function ProductRatingForm({ productName, onSubmit, onSkip }) {
+  const [rating, setRating] = useState(0);
+  const [review, setReview] = useState('');
+
+  return (
+    <form
+      className="border border-gray-200 bg-gray-50 p-4 space-y-3"
+      onSubmit={(e) => {
+        e.preventDefault();
+        if (rating < 1) return;
+        onSubmit({ rating, review: review.trim() });
+      }}
+    >
+      <div>
+        <h3 id="order-rating-label" className="text-sm font-medium text-gray-900">
+          Rate {productName}
+        </h3>
+        <p className="text-sm text-gray-600 mt-1">
+          How was this piece? Your rating helps other shoppers.
+        </p>
+      </div>
+      <StarRatingInput
+        value={rating}
+        onChange={setRating}
+        labelledBy="order-rating-label"
+      />
+      <label className="block">
+        <span className="sr-only">Optional review</span>
+        <textarea
+          value={review}
+          onChange={(e) => setReview(e.target.value)}
+          rows={3}
+          placeholder="Optional comment"
+          className="w-full px-3 py-2 border border-gray-300 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-900"
+        />
+      </label>
+      <div className="flex flex-wrap justify-end gap-2">
+        {onSkip && (
+          <button
+            type="button"
+            onClick={onSkip}
+            className="px-4 py-2 border border-gray-300 text-sm text-gray-700 hover:bg-white transition"
+          >
+            Skip for now
+          </button>
+        )}
+        <button
+          type="submit"
+          disabled={rating < 1}
+          className="px-4 py-2 bg-gray-900 text-white text-sm hover:bg-gray-800 transition disabled:opacity-40 disabled:cursor-not-allowed"
+        >
+          Submit rating
+        </button>
+      </div>
+    </form>
+  );
+}
+
+export function OrderDetailModal({
+  order,
+  product,
+  onClose,
+  onConfirmReceipt,
+  onSubmitRating,
+}) {
+  const [promptRating, setPromptRating] = useState(false);
+  const [skipRating, setSkipRating] = useState(false);
+
   useEffect(() => {
     const previous = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
@@ -36,6 +132,22 @@ export function OrderDetailModal({ order, product, onClose }) {
 
   const status = (order.status || '').toLowerCase();
   const statusSteps = getOrderStatusSteps(status);
+  const canConfirm = canCustomerConfirmReceipt(order);
+  const canRate = canCustomerRate(order);
+  const rated = hasOrderRating(order);
+  const showRatingForm = (canRate || promptRating) && !skipRating && !rated;
+
+  const handleConfirmReceipt = () => {
+    if (
+      !window.confirm(
+        `Confirm that you received ${name} for order ${order.id}?`
+      )
+    ) {
+      return;
+    }
+    onConfirmReceipt(order.id);
+    setPromptRating(true);
+  };
 
   return (
     <div
@@ -123,7 +235,56 @@ export function OrderDetailModal({ order, product, onClose }) {
                 resubmitting payment or placing a new order.
               </p>
             )}
+            {status === 'delivered' && (
+              <p className="text-sm text-gray-600 mt-3">
+                ShewaCraft confirmed this order reached your address
+                {order.destinationConfirmedAt
+                  ? ` on ${formatOrderStamp(order.destinationConfirmedAt)}`
+                  : ''}
+                . Confirm receipt when you have the product.
+              </p>
+            )}
+            {status === 'completed' && order.customerReceivedAt && (
+              <p className="text-sm text-gray-600 mt-3">
+                You accepted this order on {formatOrderStamp(order.customerReceivedAt)}.
+              </p>
+            )}
           </div>
+
+          {showRatingForm && (
+            <ProductRatingForm
+              productName={name}
+              onSubmit={(payload) => {
+                onSubmitRating(order.id, payload);
+                setPromptRating(false);
+              }}
+              onSkip={() => {
+                setPromptRating(false);
+                setSkipRating(true);
+              }}
+            />
+          )}
+
+          {rated && !showRatingForm && (
+            <div className="border border-gray-200 bg-gray-50 p-4">
+              <p className="text-sm font-medium text-gray-900 mb-2">Your rating</p>
+              <div className="flex items-center gap-1" aria-label={`Rated ${order.rating} out of 5`}>
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <Star
+                    key={star}
+                    className={`w-5 h-5 ${
+                      star <= order.rating
+                        ? 'fill-gray-900 text-gray-900'
+                        : 'text-gray-300'
+                    }`}
+                  />
+                ))}
+              </div>
+              {order.review ? (
+                <p className="text-sm text-gray-700 mt-2">{order.review}</p>
+              ) : null}
+            </div>
+          )}
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 border-t border-gray-100 pt-6">
             <div>
@@ -170,7 +331,7 @@ export function OrderDetailModal({ order, product, onClose }) {
             </div>
           </div>
 
-          <div className="flex justify-end pt-2">
+          <div className="flex flex-wrap justify-end gap-2 pt-2">
             <button
               type="button"
               onClick={onClose}
@@ -178,6 +339,15 @@ export function OrderDetailModal({ order, product, onClose }) {
             >
               Close
             </button>
+            {canConfirm && (
+              <button
+                type="button"
+                onClick={handleConfirmReceipt}
+                className="px-6 py-2.5 bg-gray-900 text-white hover:bg-gray-800 transition"
+              >
+                I received this order
+              </button>
+            )}
           </div>
         </div>
       </div>

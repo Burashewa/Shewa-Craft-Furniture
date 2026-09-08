@@ -1,5 +1,11 @@
-import { Eye } from 'lucide-react';
-import { formatOrderStatus, getStatusClasses } from '../../data/orders';
+import { Eye, Star } from 'lucide-react';
+import {
+  canCustomerConfirmReceipt,
+  canCustomerRate,
+  formatOrderStatus,
+  getStatusClasses,
+  hasOrderRating,
+} from '../../data/orders';
 
 export function OrderCard({ order, product, onViewDetails }) {
   const image =
@@ -11,6 +17,9 @@ export function OrderCard({ order, product, onViewDetails }) {
     month: 'short',
     day: 'numeric',
   });
+  const showConfirm = canCustomerConfirmReceipt(order);
+  const showRate = canCustomerRate(order);
+  const rated = hasOrderRating(order);
 
   return (
     <article className="bg-white border border-gray-200 p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6">
@@ -30,11 +39,17 @@ export function OrderCard({ order, product, onViewDetails }) {
               {formatOrderStatus(order.status)}
             </span>
             <span className="text-sm text-gray-600">Qty {order.quantity}</span>
+            {rated && (
+              <span className="inline-flex items-center gap-1 text-sm text-gray-900">
+                <Star className="w-3.5 h-3.5 fill-gray-900 text-gray-900" />
+                {order.rating}/5
+              </span>
+            )}
           </div>
         </div>
       </div>
 
-      <div className="flex items-center justify-between sm:justify-end gap-4 sm:gap-6 shrink-0">
+      <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-4 shrink-0">
         <div className="sm:text-right">
           <p className="text-xs uppercase tracking-wider text-gray-500">Total</p>
           <p className="text-xl text-gray-900">
@@ -44,6 +59,24 @@ export function OrderCard({ order, product, onViewDetails }) {
             })}
           </p>
         </div>
+        {showConfirm && (
+          <button
+            type="button"
+            onClick={() => onViewDetails(order)}
+            className="inline-flex items-center px-4 py-2.5 bg-gray-900 text-white text-sm hover:bg-gray-800 transition"
+          >
+            Confirm receipt
+          </button>
+        )}
+        {showRate && (
+          <button
+            type="button"
+            onClick={() => onViewDetails(order)}
+            className="inline-flex items-center px-4 py-2.5 bg-gray-900 text-white text-sm hover:bg-gray-800 transition"
+          >
+            Rate product
+          </button>
+        )}
         <button
           type="button"
           onClick={() => onViewDetails(order)}

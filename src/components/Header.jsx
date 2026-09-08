@@ -15,6 +15,20 @@ const desktopNavLinkClass = ({ isActive }) =>
 const navLinkClass = ({ isActive }) =>
   `transition ${isActive ? 'text-gray-900 font-medium' : 'text-gray-700 hover:text-gray-900'}`;
 
+const iconLinkClass = ({ isActive }) =>
+  `relative inline-flex items-center justify-center w-10 h-10 rounded-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 ${
+    isActive ? 'text-gray-900 bg-gray-100' : 'text-gray-700 hover:text-gray-900 hover:bg-gray-50'
+  }`;
+
+function IconBadge({ count }) {
+  if (!count || count < 1) return null;
+  return (
+    <span className="absolute top-1 right-1 bg-gray-900 text-white text-[10px] font-bold rounded-full min-w-4 h-4 px-0.5 flex items-center justify-center border-2 border-white">
+      {count > 99 ? '99+' : count}
+    </span>
+  );
+}
+
 const navItems = [
   { to: '/', label: 'Home', end: true },
   { to: '/products', label: 'Products' },
@@ -69,54 +83,50 @@ export function Header() {
             )}
           </nav>
 
-          <div className="flex items-center space-x-3 sm:space-x-4">
+          <div className="flex items-center gap-2 sm:gap-3">
             {isAuthenticated ? (
               <>
-                <Link
-                  to="/favorites"
-                  className="relative text-gray-700 hover:text-gray-900 transition"
-                  aria-label="Favorites"
-                >
-                  <Heart className="w-5 h-5" />
-                  {favoritesCount > 0 && (
-                    <span className="absolute -top-1.5 -right-1.5 bg-gray-900 text-white text-[10px] font-bold rounded-full min-w-4 h-4 px-0.5 flex items-center justify-center border-2 border-white">
-                      {favoritesCount > 99 ? '99+' : favoritesCount}
-                    </span>
-                  )}
-                </Link>
+                <div className="flex items-center gap-0.5" role="group" aria-label="Account actions">
+                  <NavLink
+                    to="/favorites"
+                    className={iconLinkClass}
+                    aria-label={
+                      favoritesCount > 0
+                        ? `Favorites, ${favoritesCount} saved`
+                        : 'Favorites'
+                    }
+                  >
+                    <Heart className="w-5 h-5" />
+                    <IconBadge count={favoritesCount} />
+                  </NavLink>
 
-                <Link
-                  to="/cart"
-                  className="relative text-gray-700 hover:text-gray-900 transition"
-                  aria-label="Shopping cart"
-                >
-                  <ShoppingCart className="w-5 h-5" />
-                  <span className="absolute -top-1.5 -right-1.5 bg-gray-900 text-white text-[10px] font-bold rounded-full min-w-4 h-4 px-0.5 flex items-center justify-center border-2 border-white">
-                    {cartCount > 99 ? '99+' : cartCount}
-                  </span>
-                </Link>
+                  <NavLink
+                    to="/cart"
+                    className={iconLinkClass}
+                    aria-label={`Shopping cart, ${cartCount} items`}
+                  >
+                    <ShoppingCart className="w-5 h-5" />
+                    <IconBadge count={cartCount} />
+                  </NavLink>
 
-                <Link
-                  to="/messages"
-                  className="relative text-gray-700 hover:text-gray-900 transition"
-                  aria-label={
-                    messagesUnread > 0
-                      ? `Messages, ${messagesUnread} unread`
-                      : 'Messages'
-                  }
-                >
-                  <Mail className="w-5 h-5" />
-                  {messagesUnread > 0 && (
-                    <span className="absolute -top-1.5 -right-1.5 bg-gray-900 text-white text-[10px] font-bold rounded-full min-w-4 h-4 px-0.5 flex items-center justify-center border-2 border-white">
-                      {messagesUnread > 99 ? '99+' : messagesUnread}
-                    </span>
-                  )}
-                </Link>
+                  <NavLink
+                    to="/messages"
+                    className={iconLinkClass}
+                    aria-label={
+                      messagesUnread > 0
+                        ? `Messages, ${messagesUnread} unread`
+                        : 'Messages'
+                    }
+                  >
+                    <Mail className="w-5 h-5" />
+                    <IconBadge count={messagesUnread} />
+                  </NavLink>
+                </div>
 
                 <button
                   type="button"
                   onClick={handleSignOut}
-                  className="hidden sm:flex items-center gap-1.5 text-sm text-gray-700 hover:text-gray-900 transition"
+                  className="hidden sm:inline-flex items-center gap-1.5 h-10 px-2.5 text-sm text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900"
                   aria-label="Sign out"
                 >
                   <LogOut className="w-4 h-4" />
@@ -124,7 +134,7 @@ export function Header() {
                 </button>
               </>
             ) : (
-              <div className="hidden sm:flex items-center space-x-3">
+              <div className="hidden sm:flex items-center gap-3">
                 <Link
                   to="/auth/signin"
                   className="text-sm text-gray-700 hover:text-gray-900 transition"
@@ -142,7 +152,7 @@ export function Header() {
 
             <button
               type="button"
-              className="md:hidden text-gray-700 hover:text-gray-900 transition"
+              className="md:hidden inline-flex items-center justify-center w-10 h-10 text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               aria-expanded={mobileMenuOpen}
               aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}

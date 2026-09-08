@@ -1,4 +1,31 @@
 import { Facebook, Instagram, Twitter } from 'lucide-react';
+import { Link } from 'react-router-dom';
+
+const shopLinks = [
+  { label: 'Living Room', to: '/products?category=Living Room' },
+  { label: 'Bedroom', to: '/products?category=Bedroom' },
+  { label: 'Dining Room', to: '/products?category=Dining' },
+  { label: 'Office', to: '/products?category=Office' },
+];
+
+const helpLinks = [
+  { label: 'Shipping Info', to: '/help#shipping' },
+  { label: 'Returns', to: '/help#returns' },
+  { label: 'FAQ', to: '/help#faq' },
+  { label: 'Contact Us', to: '/help#contact' },
+];
+
+const policyLinks = [
+  { label: 'Privacy Policy', to: '/privacy' },
+  { label: 'Terms of Service', to: '/terms' },
+  { label: 'Cookie Policy', to: '/cookies' },
+];
+
+const socialLinks = [
+  { label: 'Facebook', href: 'https://www.facebook.com/', icon: Facebook },
+  { label: 'Instagram', href: 'https://www.instagram.com/', icon: Instagram },
+  { label: 'Twitter', href: 'https://x.com/', icon: Twitter },
+];
 
 export function Footer() {
   return (
@@ -13,27 +40,21 @@ export function Footer() {
               Creating beautiful spaces with premium furniture since 2020.
             </p>
             <div className="flex space-x-3">
-              <a
-                href="#"
-                className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-800 hover:bg-gray-700 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500"
-                aria-label="Facebook"
-              >
-                <Facebook className="w-5 h-5" />
-              </a>
-              <a
-                href="#"
-                className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-800 hover:bg-gray-700 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500"
-                aria-label="Instagram"
-              >
-                <Instagram className="w-5 h-5" />
-              </a>
-              <a
-                href="#"
-                className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-800 hover:bg-gray-700 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500"
-                aria-label="Twitter"
-              >
-                <Twitter className="w-5 h-5" />
-              </a>
+              {socialLinks.map((social) => {
+                const Icon = social.icon;
+                return (
+                  <a
+                    key={social.label}
+                    href={social.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-800 hover:bg-gray-700 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500"
+                    aria-label={social.label}
+                  >
+                    <Icon className="w-5 h-5" />
+                  </a>
+                );
+              })}
             </div>
           </div>
 
@@ -41,14 +62,14 @@ export function Footer() {
           <div className="space-y-4">
             <h4 className="text-lg font-semibold text-white">Shop</h4>
             <ul className="space-y-2">
-              {['Living Room', 'Bedroom', 'Dining Room', 'Office'].map((item) => (
-                <li key={item}>
-                  <a
-                    href="#"
+              {shopLinks.map((item) => (
+                <li key={item.label}>
+                  <Link
+                    to={item.to}
                     className="text-gray-400 hover:text-white transition-colors"
                   >
-                    {item}
-                  </a>
+                    {item.label}
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -58,14 +79,14 @@ export function Footer() {
           <div className="space-y-4">
             <h4 className="text-lg font-semibold text-white">Help</h4>
             <ul className="space-y-2">
-              {['Shipping Info', 'Returns', 'FAQ', 'Contact Us'].map((item) => (
-                <li key={item}>
-                  <a
-                    href="#"
+              {helpLinks.map((item) => (
+                <li key={item.label}>
+                  <Link
+                    to={item.to}
                     className="text-gray-400 hover:text-white transition-colors"
                   >
-                    {item}
-                  </a>
+                    {item.label}
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -76,14 +97,14 @@ export function Footer() {
         <div className="mt-12 border-t border-gray-800 pt-6 flex flex-col md:flex-row justify-between items-center text-sm text-gray-400 gap-4">
           <p>© 2026 ShewaCraft Furniture. All rights reserved.</p>
           <div className="flex flex-wrap gap-6">
-            {['Privacy Policy', 'Terms of Service', 'Cookie Policy'].map((policy) => (
-              <a
-                key={policy}
-                href="#"
+            {policyLinks.map((policy) => (
+              <Link
+                key={policy.label}
+                to={policy.to}
                 className="hover:text-white transition-colors"
               >
-                {policy}
-              </a>
+                {policy.label}
+              </Link>
             ))}
           </div>
         </div>

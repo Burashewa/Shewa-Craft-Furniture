@@ -12,6 +12,7 @@ import {
   DollarSign,
 } from 'lucide-react';
 import { useToast } from '../../context/ToastContext';
+import { formatOrderStatus, getStatusClasses } from '../../data/orders';
 
 const INITIAL_CUSTOMERS = [
   {
@@ -31,7 +32,7 @@ const INITIAL_CUSTOMERS = [
     notes: 'Prefers weekday deliveries after 5 PM.',
     recentOrders: [
       { id: 'ORD-001', product: 'Modern Sofa', total: 1299, status: 'pending', date: '2024-02-10' },
-      { id: 'ORD-101', product: 'Coffee Table', total: 449, status: 'delivered', date: '2024-01-18' },
+      { id: 'ORD-101', product: 'Coffee Table', total: 449, status: 'completed', date: '2024-01-18' },
       { id: 'ORD-088', product: 'Floor Lamp', total: 189, status: 'delivered', date: '2023-12-02' },
     ],
   },
@@ -117,23 +118,6 @@ const INITIAL_CUSTOMERS = [
     ],
   },
 ];
-
-function orderStatusStyles(status) {
-  switch (status) {
-    case 'pending':
-      return 'bg-amber-50 text-amber-800 border-amber-200';
-    case 'approved':
-      return 'bg-emerald-50 text-emerald-800 border-emerald-200';
-    case 'rejected':
-      return 'bg-rose-50 text-rose-800 border-rose-200';
-    case 'shipped':
-      return 'bg-sky-50 text-sky-800 border-sky-200';
-    case 'delivered':
-      return 'bg-violet-50 text-violet-800 border-violet-200';
-    default:
-      return 'bg-gray-50 text-gray-700 border-gray-200';
-  }
-}
 
 function customerStatusStyles(status) {
   return status === 'active'
@@ -590,11 +574,11 @@ export function CustomersManagement({ onMessageCustomer }) {
                           </td>
                           <td className="px-4 py-3">
                             <span
-                              className={`inline-block px-2 py-1 text-xs border ${orderStatusStyles(
+                              className={`inline-block px-2 py-1 text-xs border ${getStatusClasses(
                                 order.status
                               )}`}
                             >
-                              {order.status}
+                              {formatOrderStatus(order.status)}
                             </span>
                           </td>
                           <td className="px-4 py-3 text-gray-500">{order.date}</td>

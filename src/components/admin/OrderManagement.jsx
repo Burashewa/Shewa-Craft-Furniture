@@ -12,11 +12,26 @@ import {
   PackageCheck,
   Ban,
   ShoppingCart,
+  CircleCheck,
+  Star,
 } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { useToast } from '../../context/ToastContext';
+import {
+  ORDER_STATUS_FLOW,
+  formatOrderStamp,
+  formatOrderStatus,
+  getOrderStatusSteps,
+  getStatusClasses,
+  hasOrderRating,
+} from '../../data/orders';
 
-const STATUS_FLOW = ['pending', 'approved', 'shipped', 'delivered'];
+const emptyConfirmation = {
+  destinationConfirmedAt: null,
+  customerReceivedAt: null,
+  rating: null,
+  review: '',
+};
 
 const INITIAL_ORDERS = [
   {
@@ -47,6 +62,7 @@ const INITIAL_ORDERS = [
     updatedAt: '2024-02-10',
     notes: 'Customer asked to confirm Navy fabric before shipping.',
     total: 1299,
+    ...emptyConfirmation,
   },
   {
     id: 'ORD-002',
@@ -76,6 +92,7 @@ const INITIAL_ORDERS = [
     updatedAt: '2024-02-09',
     notes: 'Payment verified. Ready for warehouse packing.',
     total: 899,
+    ...emptyConfirmation,
   },
   {
     id: 'ORD-003',
@@ -105,6 +122,7 @@ const INITIAL_ORDERS = [
     updatedAt: '2024-02-08',
     notes: 'Verify quantity — customer paid for 2 chairs.',
     total: 698,
+    ...emptyConfirmation,
   },
   {
     id: 'ORD-004',
@@ -132,8 +150,9 @@ const INITIAL_ORDERS = [
     status: 'shipped',
     date: '2024-02-06',
     updatedAt: '2024-02-07',
-    notes: 'Carrier: Express Freight · tracking pending customer confirmation.',
+    notes: 'Carrier: Express Freight · awaiting destination confirmation.',
     total: 459,
+    ...emptyConfirmation,
   },
   {
     id: 'ORD-005',
@@ -161,8 +180,12 @@ const INITIAL_ORDERS = [
     status: 'delivered',
     date: '2024-02-01',
     updatedAt: '2024-02-04',
-    notes: 'Delivered successfully. No issues reported.',
+    notes: 'Reached destination. Awaiting customer acceptance.',
     total: 299,
+    destinationConfirmedAt: '2024-02-04',
+    customerReceivedAt: null,
+    rating: null,
+    review: '',
   },
   {
     id: 'ORD-006',
@@ -192,25 +215,42 @@ const INITIAL_ORDERS = [
     updatedAt: '2024-01-21',
     notes: 'Payment screenshot unclear — customer asked to resubmit.',
     total: 220,
+    ...emptyConfirmation,
+  },
+  {
+    id: 'ORD-007',
+    customer: {
+      id: 'cust-001',
+      name: 'John Smith',
+      email: 'john@example.com',
+      phone: '+1234567890',
+      location: '123 Main St, New York, NY 10001',
+      avatar:
+        'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop',
+    },
+    product: {
+      id: 4,
+      name: 'Bookshelf',
+      price: 459,
+      quantity: 1,
+      image: 'https://images.unsplash.com/photo-1594620302200-9a762244a156?w=200&h=200&fit=crop',
+    },
+    payment: {
+      bank: 'Bank of America',
+      reference: 'TXN-229441',
+      screenshot: 'https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=400',
+    },
+    status: 'completed',
+    date: '2024-01-12',
+    updatedAt: '2024-01-18',
+    notes: 'Customer accepted delivery and left a rating.',
+    total: 459,
+    destinationConfirmedAt: '2024-01-16',
+    customerReceivedAt: '2024-01-17',
+    rating: 5,
+    review: 'Exactly as pictured. Fast delivery.',
   },
 ];
-
-function statusStyles(status) {
-  switch (status) {
-    case 'pending':
-      return 'bg-amber-50 text-amber-800 border-amber-200';
-    case 'approved':
-      return 'bg-emerald-50 text-emerald-800 border-emerald-200';
-    case 'rejected':
-      return 'bg-rose-50 text-rose-800 border-rose-200';
-    case 'shipped':
-      return 'bg-sky-50 text-sky-800 border-sky-200';
-    case 'delivered':
-      return 'bg-violet-50 text-violet-800 border-violet-200';
-    default:
-      return 'bg-gray-50 text-gray-700 border-gray-200';
-  }
-}
 
 function todayStamp() {
   return new Date().toISOString().slice(0, 10);
@@ -230,11 +270,21 @@ export function OrdersManagement({ onMessageCustomer }) {
     const approved = orders.filter((o) => o.status === 'approved').length;
     const shipped = orders.filter((o) => o.status === 'shipped').length;
     const delivered = orders.filter((o) => o.status === 'delivered').length;
+    const completed = orders.filter((o) => o.status === 'completed').length;
     const rejected = orders.filter((o) => o.status === 'rejected').length;
     const revenue = orders
       .filter((o) => o.status !== 'rejected')
       .reduce((sum, o) => sum + Number(o.total || 0), 0);
-    return { total, pending, approved, shipped, delivered, rejected, revenue };
+    return {
+      total,
+      pending,
+      approved,
+      shipped,
+      delivered,
+      completed,
+      rejected,
+      revenue,
+    };
   }, [orders]);
 
   const filteredOrders = useMemo(() => {
@@ -347,16 +397,38 @@ export function OrdersManagement({ onMessageCustomer }) {
     const order = orders.find((o) => o.id === orderId);
     if (
       !window.confirm(
-        `Confirm delivery of ${orderId} to ${order?.customer?.name || 'the customer'}?`
+        `Confirm that ${orderId} reached ${order?.customer?.name || 'the customer'}?`
       )
     ) {
       return;
     }
-    updateOrderStatus(orderId, 'delivered');
+    const stamp = todayStamp();
+    setOrders((prev) =>
+      prev.map((item) =>
+        item.id === orderId
+          ? {
+              ...item,
+              status: 'delivered',
+              updatedAt: stamp,
+              destinationConfirmedAt: stamp,
+            }
+          : item
+      )
+    );
+    setSelectedOrder((current) =>
+      current?.id === orderId
+        ? {
+            ...current,
+            status: 'delivered',
+            updatedAt: stamp,
+            destinationConfirmedAt: stamp,
+          }
+        : current
+    );
     showToast({
       type: 'success',
-      title: 'Order marked as delivered',
-      message: `${orderId} for ${order?.customer?.name || 'customer'} is now delivered.`,
+      title: 'Destination confirmed',
+      message: `${orderId} is marked as delivered. Waiting for the customer to accept.`,
     });
   };
 
@@ -400,6 +472,10 @@ export function OrdersManagement({ onMessageCustomer }) {
       Total: order.total,
       'Payment Bank': order.payment.bank,
       'Payment Reference': order.payment.reference || '',
+      'Destination Confirmed': order.destinationConfirmedAt || '',
+      'Customer Received': order.customerReceivedAt || '',
+      Rating: order.rating || '',
+      Review: order.review || '',
       Notes: order.notes || '',
     }));
 
@@ -419,6 +495,10 @@ export function OrdersManagement({ onMessageCustomer }) {
       { wch: 10 },
       { wch: 18 },
       { wch: 16 },
+      { wch: 20 },
+      { wch: 18 },
+      { wch: 8 },
+      { wch: 28 },
       { wch: 32 },
     ];
 
@@ -438,10 +518,9 @@ export function OrdersManagement({ onMessageCustomer }) {
     });
   };
 
-  const statusSteps =
-    selectedOrder?.status === 'rejected'
-      ? ['pending', 'rejected']
-      : STATUS_FLOW;
+  const statusSteps = selectedOrder
+    ? getOrderStatusSteps(selectedOrder.status)
+    : ORDER_STATUS_FLOW;
 
   return (
     <div className="lg:pt-0 pt-16">
@@ -465,7 +544,7 @@ export function OrdersManagement({ onMessageCustomer }) {
       </div>
 
       <div className="p-6 space-y-6">
-        <section className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+        <section className="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-7 gap-4">
           <div className="bg-white border border-gray-200 p-4">
             <div className="flex items-center gap-2 text-xs text-gray-500 mb-1">
               <ShoppingCart className="w-3.5 h-3.5" />
@@ -514,6 +593,17 @@ export function OrdersManagement({ onMessageCustomer }) {
             </div>
             <p className="text-2xl text-gray-900">{stats.delivered}</p>
           </button>
+          <button
+            type="button"
+            onClick={() => setFilterStatus('completed')}
+            className="text-left bg-white border border-gray-200 p-4 hover:border-gray-400 transition"
+          >
+            <div className="flex items-center gap-2 text-xs text-gray-500 mb-1">
+              <CircleCheck className="w-3.5 h-3.5" />
+              Completed
+            </div>
+            <p className="text-2xl text-gray-900">{stats.completed}</p>
+          </button>
           <div className="bg-white border border-gray-200 p-4 col-span-2 xl:col-span-1">
             <p className="text-xs text-gray-500 mb-1">Active revenue</p>
             <p className="text-2xl text-gray-900">
@@ -556,6 +646,7 @@ export function OrdersManagement({ onMessageCustomer }) {
               <option value="approved">Approved</option>
               <option value="shipped">Shipped</option>
               <option value="delivered">Delivered</option>
+              <option value="completed">Completed</option>
               <option value="rejected">Rejected</option>
             </select>
             <select
@@ -689,11 +780,11 @@ export function OrdersManagement({ onMessageCustomer }) {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span
-                          className={`inline-block px-2 py-1 text-xs border ${statusStyles(
+                          className={`inline-block px-2 py-1 text-xs border ${getStatusClasses(
                             order.status
                           )}`}
                         >
-                          {order.status}
+                          {formatOrderStatus(order.status)}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -749,14 +840,14 @@ export function OrdersManagement({ onMessageCustomer }) {
                     const active = selectedOrder.status === step;
                     const passed =
                       selectedOrder.status !== 'rejected' &&
-                      STATUS_FLOW.indexOf(selectedOrder.status) >
-                        STATUS_FLOW.indexOf(step);
+                      ORDER_STATUS_FLOW.indexOf(selectedOrder.status) >
+                        ORDER_STATUS_FLOW.indexOf(step);
                     return (
                       <span
                         key={step}
                         className={`px-3 py-1.5 text-xs border capitalize ${
                           active
-                            ? statusStyles(step)
+                            ? getStatusClasses(step)
                             : passed
                               ? 'bg-gray-900 text-white border-gray-900'
                               : 'bg-white text-gray-400 border-gray-200'
@@ -768,6 +859,81 @@ export function OrdersManagement({ onMessageCustomer }) {
                   })}
                 </div>
               </div>
+
+              {['shipped', 'delivered', 'completed'].includes(
+                selectedOrder.status
+              ) && (
+                <div>
+                  <h3 className="text-sm font-medium text-gray-700 mb-3">
+                    Destination check
+                  </h3>
+                  <div className="bg-gray-50 border border-gray-200 p-4 space-y-2 text-sm">
+                    {selectedOrder.status === 'shipped' && (
+                      <p className="text-gray-700">
+                        Awaiting destination confirmation. Confirm when the
+                        shipment has reached the customer.
+                      </p>
+                    )}
+                    {selectedOrder.status === 'delivered' && (
+                      <>
+                        <p className="text-gray-900 font-medium">
+                          Reached destination
+                          {selectedOrder.destinationConfirmedAt
+                            ? ` · ${formatOrderStamp(selectedOrder.destinationConfirmedAt)}`
+                            : ''}
+                        </p>
+                        <p className="text-gray-600">
+                          Awaiting customer acceptance.
+                        </p>
+                      </>
+                    )}
+                    {selectedOrder.status === 'completed' && (
+                      <>
+                        <p className="text-gray-900 font-medium">
+                          Customer accepted
+                          {selectedOrder.customerReceivedAt
+                            ? ` · ${formatOrderStamp(selectedOrder.customerReceivedAt)}`
+                            : ''}
+                        </p>
+                        {selectedOrder.destinationConfirmedAt && (
+                          <p className="text-gray-600">
+                            Destination confirmed{' '}
+                            {formatOrderStamp(selectedOrder.destinationConfirmedAt)}
+                          </p>
+                        )}
+                        {hasOrderRating(selectedOrder) ? (
+                          <div className="pt-1">
+                            <div className="flex items-center gap-1">
+                              {[1, 2, 3, 4, 5].map((star) => (
+                                <Star
+                                  key={star}
+                                  className={`w-4 h-4 ${
+                                    star <= selectedOrder.rating
+                                      ? 'fill-gray-900 text-gray-900'
+                                      : 'text-gray-300'
+                                  }`}
+                                />
+                              ))}
+                              <span className="text-gray-700 ml-1">
+                                {selectedOrder.rating}/5
+                              </span>
+                            </div>
+                            {selectedOrder.review ? (
+                              <p className="text-gray-700 mt-1">
+                                {selectedOrder.review}
+                              </p>
+                            ) : null}
+                          </div>
+                        ) : (
+                          <p className="text-gray-600">
+                            Customer has not rated this product yet.
+                          </p>
+                        )}
+                      </>
+                    )}
+                  </div>
+                </div>
+              )}
 
               <div>
                 <h3 className="text-lg text-gray-900 mb-3">Customer</h3>
@@ -910,10 +1076,11 @@ export function OrdersManagement({ onMessageCustomer }) {
                   className="flex items-center gap-2 px-5 py-2 bg-gray-900 text-white hover:bg-gray-800 transition"
                 >
                   <PackageCheck className="w-5 h-5" />
-                  Mark as delivered
+                  Confirm destination reached
                 </button>
               )}
               {(selectedOrder.status === 'delivered' ||
+                selectedOrder.status === 'completed' ||
                 selectedOrder.status === 'rejected') && (
                 <button
                   type="button"

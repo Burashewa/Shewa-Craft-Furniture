@@ -13,6 +13,7 @@ import {
   Truck,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { formatOrderStatus, getStatusClasses } from '../../data/orders';
 
 const STATS = [
   {
@@ -64,6 +65,7 @@ const ORDER_PIPELINE = [
   { label: 'Approved', count: 28, color: 'bg-emerald-600', view: 'orders' },
   { label: 'Shipped', count: 19, color: 'bg-sky-600', view: 'orders' },
   { label: 'Delivered', count: 86, color: 'bg-violet-600', view: 'orders' },
+  { label: 'Completed', count: 64, color: 'bg-gray-900', view: 'orders' },
   { label: 'Rejected', count: 11, color: 'bg-rose-500', view: 'orders' },
 ];
 
@@ -105,7 +107,7 @@ const RECENT_ORDERS = [
     customer: 'David Wilson',
     product: 'Coffee Table',
     amount: 299,
-    status: 'delivered',
+    status: 'completed',
     date: 'Feb 10',
   },
 ];
@@ -146,23 +148,6 @@ const TOP_PRODUCTS = [
   { name: 'Office Chair', sold: 41, revenue: 14309, stock: 2 },
   { name: 'Bookshelf', sold: 19, revenue: 8721, stock: 12 },
 ];
-
-function statusStyles(status) {
-  switch (status) {
-    case 'pending':
-      return 'bg-amber-50 text-amber-800 border-amber-200';
-    case 'approved':
-      return 'bg-emerald-50 text-emerald-800 border-emerald-200';
-    case 'shipped':
-      return 'bg-sky-50 text-sky-800 border-sky-200';
-    case 'delivered':
-      return 'bg-violet-50 text-violet-800 border-violet-200';
-    case 'rejected':
-      return 'bg-rose-50 text-rose-800 border-rose-200';
-    default:
-      return 'bg-gray-50 text-gray-700 border-gray-200';
-  }
-}
 
 function toneStyles(tone) {
   switch (tone) {
@@ -421,11 +406,11 @@ export function DashboardOverview({ onNavigate }) {
                       </td>
                       <td className="px-6 py-4">
                         <span
-                          className={`inline-block px-2 py-1 text-xs border ${statusStyles(
+                          className={`inline-block px-2 py-1 text-xs border ${getStatusClasses(
                             order.status
                           )}`}
                         >
-                          {order.status}
+                          {formatOrderStatus(order.status)}
                         </span>
                       </td>
                     </tr>
