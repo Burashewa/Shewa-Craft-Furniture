@@ -15,15 +15,21 @@ export function CatalogHeader({ category }) {
           <Link to="/" className="hover:text-gray-900 transition">
             Home
           </Link>
-          <ChevronRight className="w-4 h-4" />
-          <Link to="/products" className="hover:text-gray-900 transition">
-            Products
-          </Link>
-          {isFiltered && (
+          <ChevronRight className="w-4 h-4" aria-hidden />
+          {isFiltered ? (
             <>
-              <ChevronRight className="w-4 h-4" />
-              <span className="text-gray-900">{category}</span>
+              <Link to="/products" className="hover:text-gray-900 transition">
+                Products
+              </Link>
+              <ChevronRight className="w-4 h-4" aria-hidden />
+              <span className="text-gray-900" aria-current="page">
+                {category}
+              </span>
             </>
+          ) : (
+            <span className="text-gray-900" aria-current="page">
+              Products
+            </span>
           )}
         </nav>
 

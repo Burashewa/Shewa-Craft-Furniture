@@ -1,5 +1,8 @@
 import { X } from 'lucide-react';
 
+const focusRing =
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2';
+
 export function ActiveFilterChips({
   selectedCategory,
   priceRange,
@@ -44,17 +47,18 @@ export function ActiveFilterChips({
           key={chip.key}
           type="button"
           onClick={chip.onClear}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 text-sm text-gray-800 hover:bg-gray-200 transition"
+          aria-label={`Remove ${chip.label} filter`}
+          className={`inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 text-sm text-gray-800 hover:bg-gray-200 transition ${focusRing}`}
         >
           {chip.label}
-          <X className="w-3.5 h-3.5" />
+          <X className="w-3.5 h-3.5" aria-hidden />
         </button>
       ))}
       {chips.length > 1 && (
         <button
           type="button"
           onClick={onClearAll}
-          className="text-sm text-gray-600 hover:text-gray-900 underline underline-offset-2 transition"
+          className={`text-sm text-gray-600 hover:text-gray-900 underline underline-offset-2 transition ${focusRing}`}
         >
           Clear all
         </button>

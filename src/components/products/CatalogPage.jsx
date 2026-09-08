@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { products } from '../../data/products';
 import { ProductDetailView } from '../ProductDetailView';
@@ -15,22 +15,16 @@ export function CatalogPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('All');
   const [priceRange, setPriceRange] = useState('All');
   const [sortBy, setSortBy] = useState('featured');
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+  const filtersButtonRef = useRef(null);
 
-  useEffect(() => {
-    const categoryParam = searchParams.get('category');
-    if (categoryParam && CATEGORIES.includes(categoryParam)) {
-      setSelectedCategory(categoryParam);
-    } else if (!categoryParam) {
-      setSelectedCategory('All');
-    }
-  }, [searchParams]);
+  const categoryParam = searchParams.get('category');
+  const selectedCategory =
+    categoryParam && CATEGORIES.includes(categoryParam) ? categoryParam : 'All';
 
   const handleCategoryChange = (category) => {
-    setSelectedCategory(category);
     const next = new URLSearchParams(searchParams);
     if (category === 'All') {
       next.delete('category');
@@ -71,7 +65,7 @@ export function CatalogPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex flex-col lg:flex-row gap-8 lg:gap-10">
           <aside className="hidden lg:block w-56 shrink-0">
-            <div className="sticky top-24 border border-gray-200 bg-white p-5">
+            <div className="sticky top-24 border border-gray-200 bg-white p-4 md:p-5">
               <h2 className="text-sm font-medium uppercase tracking-wider text-gray-500 mb-6">
                 Filters
               </h2>
@@ -94,6 +88,8 @@ export function CatalogPage() {
               resultsCount={filteredProducts.length}
               onOpenFilters={() => setMobileFiltersOpen(true)}
               activeFilterCount={activeFilterCount}
+              filtersButtonRef={filtersButtonRef}
+              filtersOpen={mobileFiltersOpen}
             />
 
             <ActiveFilterChips
@@ -118,6 +114,7 @@ export function CatalogPage() {
       <MobileFilterDrawer
         open={mobileFiltersOpen}
         onClose={() => setMobileFiltersOpen(false)}
+        returnFocusRef={filtersButtonRef}
         selectedCategory={selectedCategory}
         onCategoryChange={handleCategoryChange}
         priceRange={priceRange}

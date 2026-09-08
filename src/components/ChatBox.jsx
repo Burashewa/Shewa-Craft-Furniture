@@ -1,183 +1,265 @@
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 import { useState, useRef, useEffect } from 'react';
-import { X, Send } from 'lucide-react';
+import { X, Send, MessageCircle } from 'lucide-react';
 import { OWNER_RESPONSES } from '../data/messages';
+import shewaCraftLogo from '../assets/ShewaCraft_Logo.png';
+
+const MotionDiv = motion.div;
+
+const focusRing =
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2';
+
+function buildOpeningMessage(productName) {
+  return {
+    id: 1,
+    sender: 'owner',
+    text: `Hi! Thanks for your interest in the ${productName}. How can I help you today?`,
+    timestampLabel: 'Just now',
+  };
+}
 
 export function ChatBox({ product, onClose }) {
-  const [messages, setMessages] = useState([
-    {
-      id: 1,
-      sender: 'owner',
-      text: `Hi! Thanks for your interest in the ${product.name}. How can I help you today?`,
-      timestamp: new Date(Date.now() - 60000),
-    },
+  const prefersReducedMotion = useReducedMotion();
+  const [messages, setMessages] = useState(() => [
+    buildOpeningMessage(product.name),
   ]);
   const [inputValue, setInputValue] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef(null);
+  const inputRef = useRef(null);
+
+  const responseTime =
+    product.owner?.responseTime?.toLowerCase() || 'within a few hours';
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, isTyping]);
+    messagesEndRef.current?.scrollIntoView({
+      behavior: prefersReducedMotion ? 'auto' : 'smooth',
+    });
+  }, [messages, isTyping, prefersReducedMotion]);
+
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => {
+      inputRef.current?.focus();
+    });
+    return () => cancelAnimationFrame(frame);
+  }, []);
 
   const handleSendMessage = (e) => {
     e.preventDefault();
     if (!inputValue.trim()) return;
 
+    const sentAt = new Date();
     const newMessage = {
-      id: Date.now(),
+      id: sentAt.getTime(),
       sender: 'user',
       text: inputValue.trim(),
-      timestamp: new Date(),
+      timestamp: sentAt,
     };
 
     setMessages((prev) => [...prev, newMessage]);
     setInputValue('');
     setIsTyping(true);
 
-    setTimeout(() => {
+    window.setTimeout(() => {
+      const replyAt = new Date();
       setMessages((prev) => [
         ...prev,
         {
-          id: Date.now() + 1,
+          id: replyAt.getTime() + 1,
           sender: 'owner',
-          text: OWNER_RESPONSES[Math.floor(Math.random() * OWNER_RESPONSES.length)],
-          timestamp: new Date(),
+          text: OWNER_RESPONSES[
+            Math.floor(Math.random() * OWNER_RESPONSES.length)
+          ],
+          timestamp: replyAt,
         },
       ]);
       setIsTyping(false);
     }, 1200);
   };
 
-  const formatTime = (date) =>
-    date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+  const formatTime = (message) => {
+    if (message.timestampLabel) return message.timestampLabel;
+    if (!message.timestamp) return '';
+    return message.timestamp.toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+    });
+  };
+
+  const drawerMotion = prefersReducedMotion
+    ? {
+        initial: { opacity: 0 },
+        animate: { opacity: 1 },
+        exit: { opacity: 0 },
+      }
+    : {
+        initial: { opacity: 0, x: 24 },
+        animate: { opacity: 1, x: 0 },
+        exit: { opacity: 0, x: 24 },
+      };
 
   return (
-    <motion.div
-      className="fixed bottom-4 right-4 z-50 w-[calc(100%-2rem)] max-w-md"
-      initial={{ opacity: 0, y: 50, scale: 0.95 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, y: 50, scale: 0.95 }}
-      transition={{ duration: 0.3 }}
+    <MotionDiv
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="owner-chat-title"
+      className="fixed inset-0 z-60 md:inset-y-0 md:left-auto md:right-0 md:w-full md:max-w-105 flex flex-col bg-white border-l border-gray-200 shadow-xl"
+      {...drawerMotion}
+      transition={{ duration: prefersReducedMotion ? 0 : 0.2 }}
+      onClick={(e) => e.stopPropagation()}
     >
-      <div className="bg-white border border-gray-200 shadow-xl overflow-hidden">
-        <div className="bg-gray-900 text-white p-4 flex items-center justify-between">
-          <div className="flex items-center gap-3 min-w-0">
-            <div className="w-10 h-10 bg-white/10 flex items-center justify-center text-sm shrink-0">
-              SC
-            </div>
-            <div className="min-w-0">
-              <h3 className="text-sm truncate">ShewaCraft Support</h3>
-              <p className="text-xs text-white/70 truncate">
-                Typically replies {product.owner?.responseTime?.toLowerCase() || 'soon'}
-              </p>
-            </div>
+      <div className="shrink-0 bg-gray-900 text-white px-4 py-3.5 flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3 min-w-0">
+          <img
+            src={shewaCraftLogo}
+            alt=""
+            className="w-10 h-10 object-contain bg-white shrink-0 p-0.5"
+          />
+          <div className="min-w-0">
+            <h3 id="owner-chat-title" className="text-sm font-medium truncate">
+              ShewaCraft Support
+            </h3>
+            <p className="text-xs text-white/70 truncate">
+              Typically replies {responseTime}
+            </p>
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="w-9 h-9 hover:bg-white/10 flex items-center justify-center transition shrink-0"
-            aria-label="Close chat"
-          >
-            <X className="w-5 h-5" />
-          </button>
         </div>
+        <button
+          type="button"
+          onClick={onClose}
+          className={`w-9 h-9 hover:bg-white/10 flex items-center justify-center transition shrink-0 ${focusRing} focus-visible:ring-offset-gray-900`}
+          aria-label="Close chat"
+        >
+          <X className="w-5 h-5" />
+        </button>
+      </div>
 
-        <div className="p-3 bg-gray-50 border-b border-gray-200">
-          <div className="flex gap-3">
-            <img
-              src={product.images[0]}
-              alt={product.name}
-              className="w-14 h-14 object-cover bg-gray-100"
+      <div className="shrink-0 px-4 py-3 bg-gray-50 border-b border-gray-200">
+        <div className="flex items-center gap-3">
+          <img
+            src={product.images?.[0]}
+            alt={product.name}
+            className="w-12 h-12 object-cover bg-gray-100 shrink-0 border border-gray-200"
+          />
+          <div className="flex-1 min-w-0">
+            <p className="text-sm text-gray-900 truncate">{product.name}</p>
+            <p className="text-sm text-gray-500">
+              ${Number(product.price).toLocaleString()}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div className="flex-1 min-h-0 overflow-y-auto p-4 space-y-3 bg-gray-50/80">
+        {messages.length === 0 ? (
+          <div className="h-full min-h-48 flex flex-col items-center justify-center text-center px-6">
+            <MessageCircle
+              className="w-10 h-10 text-gray-300 mb-3"
+              aria-hidden
             />
-            <div className="flex-1 min-w-0">
-              <p className="text-sm text-gray-900 truncate">{product.name}</p>
-              <p className="text-sm text-gray-500">${product.price.toLocaleString()}</p>
-            </div>
+            <p className="text-sm text-gray-900 font-medium">Start the conversation</p>
+            <p className="text-xs text-gray-500 mt-1 max-w-64">
+              Ask about availability, details, or delivery for this product.
+            </p>
           </div>
-        </div>
-
-        <div className="h-80 overflow-y-auto p-4 space-y-3 bg-gray-50">
-          {messages.map((message) => (
+        ) : (
+          messages.map((message) => (
             <div
               key={message.id}
-              className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
+              className={`flex ${
+                message.sender === 'user' ? 'justify-end' : 'justify-start'
+              }`}
             >
               <div
-                className={`max-w-[80%] px-3 py-2 ${
+                className={`max-w-[85%] px-3.5 py-2.5 ${
                   message.sender === 'user'
                     ? 'bg-gray-900 text-white'
                     : 'bg-white text-gray-900 border border-gray-200'
                 }`}
               >
-                <p className="text-sm">{message.text}</p>
+                <p className="text-sm whitespace-pre-wrap wrap-break-word">
+                  {message.text}
+                </p>
                 <p
-                  className={`text-xs mt-1 ${
-                    message.sender === 'user' ? 'text-white/60' : 'text-gray-500'
+                  className={`text-[11px] mt-1.5 ${
+                    message.sender === 'user'
+                      ? 'text-white/55'
+                      : 'text-gray-400'
                   }`}
                 >
-                  {formatTime(message.timestamp)}
+                  {formatTime(message)}
                 </p>
               </div>
             </div>
-          ))}
+          ))
+        )}
 
-          {isTyping && (
-            <div className="flex justify-start">
-              <div className="bg-white border border-gray-200 px-3 py-2">
-                <div className="flex gap-1">
-                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" />
-                  <div
-                    className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-                    style={{ animationDelay: '150ms' }}
-                  />
-                  <div
-                    className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-                    style={{ animationDelay: '300ms' }}
-                  />
-                </div>
+        {isTyping && (
+          <div className="flex justify-start">
+            <div
+              className="bg-white border border-gray-200 px-3 py-2.5"
+              aria-live="polite"
+              aria-label="Owner is typing"
+            >
+              <div className="flex gap-1">
+                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce motion-reduce:animate-none" />
+                <div
+                  className="w-2 h-2 bg-gray-400 rounded-full animate-bounce motion-reduce:animate-none"
+                  style={{ animationDelay: '150ms' }}
+                />
+                <div
+                  className="w-2 h-2 bg-gray-400 rounded-full animate-bounce motion-reduce:animate-none"
+                  style={{ animationDelay: '300ms' }}
+                />
               </div>
             </div>
-          )}
-          <div ref={messagesEndRef} />
-        </div>
+          </div>
+        )}
+        <div ref={messagesEndRef} />
+      </div>
 
-        <div className="p-3 bg-white border-t border-gray-200">
-          <div className="flex flex-wrap gap-2 mb-3">
-            {[
-              'Is this still available?',
-              'More details?',
-              'Delivery time?',
-            ].map((label) => (
+      <div className="shrink-0 p-3 sm:p-4 bg-white border-t border-gray-200">
+        <div className="flex flex-wrap gap-2 mb-3">
+          {['Is this still available?', 'More details?', 'Delivery time?'].map(
+            (label) => (
               <button
                 key={label}
                 type="button"
-                onClick={() => setInputValue(label)}
-                className="px-2.5 py-1 border border-gray-300 text-xs text-gray-700 hover:bg-gray-50 transition"
+                onClick={() => {
+                  setInputValue(label);
+                  inputRef.current?.focus();
+                }}
+                className={`px-2.5 py-1.5 border border-gray-300 text-xs text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition ${focusRing}`}
               >
                 {label}
               </button>
-            ))}
-          </div>
-          <form onSubmit={handleSendMessage} className="flex items-center gap-2">
-            <input
-              type="text"
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              placeholder="Type your message..."
-              className="flex-1 px-3 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-900"
-            />
-            <button
-              type="submit"
-              disabled={!inputValue.trim()}
-              className="px-3 py-2 bg-gray-900 text-white hover:bg-gray-800 transition disabled:bg-gray-300 disabled:cursor-not-allowed"
-              aria-label="Send message"
-            >
-              <Send className="w-4 h-4" />
-            </button>
-          </form>
+            )
+          )}
         </div>
+        <form onSubmit={handleSendMessage} className="flex items-center gap-2">
+          <label htmlFor="owner-chat-input" className="sr-only">
+            Message
+          </label>
+          <input
+            ref={inputRef}
+            id="owner-chat-input"
+            type="text"
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            placeholder="Type your message..."
+            autoComplete="off"
+            className={`flex-1 min-w-0 px-3 py-2.5 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-900`}
+          />
+          <button
+            type="submit"
+            disabled={!inputValue.trim()}
+            className={`px-3.5 py-2.5 bg-gray-900 text-white hover:bg-gray-800 transition disabled:bg-gray-300 disabled:cursor-not-allowed shrink-0 ${focusRing}`}
+            aria-label="Send message"
+          >
+            <Send className="w-4 h-4" />
+          </button>
+        </form>
       </div>
-    </motion.div>
+    </MotionDiv>
   );
 }

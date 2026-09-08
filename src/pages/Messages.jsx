@@ -7,7 +7,7 @@ export default function Messages() {
     <>
       <Header />
       <MessagesPage />
-      <Footer />
+      {/* <Footer /> */}
     </>
   );
 }

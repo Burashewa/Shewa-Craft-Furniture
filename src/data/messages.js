@@ -82,13 +82,30 @@ export const conversations = [
   },
 ];
 
+export function getUnreadCount(conversationList = conversations) {
+  return conversationList.reduce(
+    (sum, conversation) => sum + (Number(conversation.unread) || 0),
+    0
+  );
+}
+
 export function formatMessageTime(iso) {
   const date = new Date(iso);
   const now = new Date();
   const sameDay = date.toDateString() === now.toDateString();
   if (sameDay) {
-    return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+    return date.toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+    });
   }
+
+  const yesterday = new Date(now);
+  yesterday.setDate(now.getDate() - 1);
+  if (date.toDateString() === yesterday.toDateString()) {
+    return 'Yesterday';
+  }
+
   return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
 }
 
@@ -98,4 +115,10 @@ export const OWNER_RESPONSES = [
   'Absolutely! I can arrange that for you.',
   'Yes, we have that available. Would you like to know more about the dimensions?',
   'Great choice! This item is currently in stock and ready to ship.',
+];
+
+export const QUICK_REPLY_CHIPS = [
+  'Is this still available?',
+  'More details?',
+  'Delivery time?',
 ];

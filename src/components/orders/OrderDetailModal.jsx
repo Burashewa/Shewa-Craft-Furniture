@@ -1,6 +1,11 @@
 import { useEffect } from 'react';
 import { X } from 'lucide-react';
-import { getStatusClasses } from '../../data/orders';
+import {
+  ORDER_STATUS_FLOW,
+  formatOrderStatus,
+  getOrderStatusSteps,
+  getStatusClasses,
+} from '../../data/orders';
 
 export function OrderDetailModal({ order, product, onClose }) {
   useEffect(() => {
@@ -29,6 +34,9 @@ export function OrderDetailModal({ order, product, onClose }) {
     day: 'numeric',
   });
 
+  const status = (order.status || '').toLowerCase();
+  const statusSteps = getOrderStatusSteps(status);
+
   return (
     <div
       className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-start md:items-center justify-center p-4 overflow-y-auto"
@@ -43,7 +51,9 @@ export function OrderDetailModal({ order, product, onClose }) {
       >
         <div className="p-5 sm:p-6 border-b border-gray-200 flex items-center justify-between gap-4">
           <div>
-            <p className="text-xs uppercase tracking-wider text-gray-500 mb-1">Order details</p>
+            <p className="text-xs uppercase tracking-wider text-gray-500 mb-1">
+              Order details
+            </p>
             <h2 id="order-detail-title" className="text-2xl text-gray-900">
               {order.id}
             </h2>
@@ -61,48 +71,101 @@ export function OrderDetailModal({ order, product, onClose }) {
         <div className="p-5 sm:p-6 space-y-6">
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="w-full sm:w-36 h-36 shrink-0 overflow-hidden bg-gray-100">
-              <img src={image} alt={name} className="w-full h-full object-cover" />
+              <img
+                src={image}
+                alt={name}
+                className="w-full h-full object-cover"
+              />
             </div>
             <div className="min-w-0">
               <h3 className="text-xl text-gray-900 mb-2">{name}</h3>
               <p className="text-sm text-gray-600 mb-1">Placed {formattedDate}</p>
               <p className="text-sm text-gray-600 mb-3">{order.shipping}</p>
-              <div className="flex flex-wrap gap-2">
-                <span className={`inline-flex px-2.5 py-0.5 text-xs ${getStatusClasses(order.orderStatus)}`}>
-                  {order.orderStatus}
-                </span>
-                <span className={`inline-flex px-2.5 py-0.5 text-xs ${getStatusClasses(order.status)}`}>
-                  {order.status}
-                </span>
-              </div>
+              <span
+                className={`inline-flex px-2.5 py-0.5 text-xs border ${getStatusClasses(status)}`}
+              >
+                {formatOrderStatus(status)}
+              </span>
             </div>
+          </div>
+
+          <div>
+            <h3 className="text-sm font-medium text-gray-700 mb-3">
+              Fulfillment progress
+            </h3>
+            <div className="flex flex-wrap gap-2">
+              {statusSteps.map((step) => {
+                const active = status === step;
+                const passed =
+                  status !== 'rejected' &&
+                  ORDER_STATUS_FLOW.indexOf(status) >
+                    ORDER_STATUS_FLOW.indexOf(step);
+
+                return (
+                  <span
+                    key={step}
+                    className={`px-3 py-1.5 text-xs border capitalize ${
+                      active
+                        ? getStatusClasses(step)
+                        : passed
+                          ? 'bg-gray-900 text-white border-gray-900'
+                          : 'bg-white text-gray-400 border-gray-200'
+                    }`}
+                  >
+                    {step}
+                  </span>
+                );
+              })}
+            </div>
+            {status === 'rejected' && (
+              <p className="text-sm text-rose-700 mt-3">
+                This order was rejected. Contact support if you need help
+                resubmitting payment or placing a new order.
+              </p>
+            )}
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 border-t border-gray-100 pt-6">
             <div>
-              <p className="text-xs uppercase tracking-wider text-gray-500 mb-1">Quantity</p>
+              <p className="text-xs uppercase tracking-wider text-gray-500 mb-1">
+                Quantity
+              </p>
               <p className="text-gray-900">{order.quantity}</p>
             </div>
             <div>
-              <p className="text-xs uppercase tracking-wider text-gray-500 mb-1">Unit price</p>
+              <p className="text-xs uppercase tracking-wider text-gray-500 mb-1">
+                Unit price
+              </p>
               <p className="text-gray-900">
-                ${(order.price ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                $
+                {(order.price ?? 0).toLocaleString(undefined, {
+                  minimumFractionDigits: 2,
+                })}
               </p>
             </div>
             <div className="sm:col-span-2">
-              <p className="text-xs uppercase tracking-wider text-gray-500 mb-1">Ship to</p>
+              <p className="text-xs uppercase tracking-wider text-gray-500 mb-1">
+                Ship to
+              </p>
               <p className="text-gray-900">{order.address}</p>
             </div>
             <div>
-              <p className="text-xs uppercase tracking-wider text-gray-500 mb-1">Payment</p>
+              <p className="text-xs uppercase tracking-wider text-gray-500 mb-1">
+                Payment
+              </p>
               <p className="text-gray-900">
                 {order.payment.method} · **** {order.payment.last4}
               </p>
             </div>
             <div>
-              <p className="text-xs uppercase tracking-wider text-gray-500 mb-1">Order total</p>
+              <p className="text-xs uppercase tracking-wider text-gray-500 mb-1">
+                Order total
+              </p>
               <p className="text-xl text-gray-900">
-                ${total.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                $
+                {total.toLocaleString(undefined, {
+                  minimumFractionDigits: 2,
+                })}
               </p>
             </div>
           </div>

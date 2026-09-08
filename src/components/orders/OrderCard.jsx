@@ -1,5 +1,5 @@
 import { Eye } from 'lucide-react';
-import { getStatusClasses } from '../../data/orders';
+import { formatOrderStatus, getStatusClasses } from '../../data/orders';
 
 export function OrderCard({ order, product, onViewDetails }) {
   const image =
@@ -25,14 +25,9 @@ export function OrderCard({ order, product, onViewDetails }) {
           </p>
           <div className="flex flex-wrap items-center gap-2 mt-2">
             <span
-              className={`inline-flex px-2.5 py-0.5 text-xs ${getStatusClasses(order.orderStatus)}`}
+              className={`inline-flex px-2.5 py-0.5 text-xs border ${getStatusClasses(order.status)}`}
             >
-              {order.orderStatus}
-            </span>
-            <span
-              className={`inline-flex px-2.5 py-0.5 text-xs ${getStatusClasses(order.status)}`}
-            >
-              {order.status}
+              {formatOrderStatus(order.status)}
             </span>
             <span className="text-sm text-gray-600">Qty {order.quantity}</span>
           </div>
@@ -42,7 +37,12 @@ export function OrderCard({ order, product, onViewDetails }) {
       <div className="flex items-center justify-between sm:justify-end gap-4 sm:gap-6 shrink-0">
         <div className="sm:text-right">
           <p className="text-xs uppercase tracking-wider text-gray-500">Total</p>
-          <p className="text-xl text-gray-900">${order.price.toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
+          <p className="text-xl text-gray-900">
+            $
+            {order.price.toLocaleString(undefined, {
+              minimumFractionDigits: 2,
+            })}
+          </p>
         </div>
         <button
           type="button"

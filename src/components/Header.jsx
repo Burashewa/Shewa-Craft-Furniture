@@ -3,6 +3,14 @@ import { useState } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useShop } from '../context/ShopContext';
+import { conversations, getUnreadCount } from '../data/messages';
+
+const desktopNavLinkClass = ({ isActive }) =>
+  `inline-flex items-center h-16 border-b-2 transition ${
+    isActive
+      ? 'text-gray-900 font-medium border-gray-900'
+      : 'text-gray-700 hover:text-gray-900 border-transparent'
+  }`;
 
 const navLinkClass = ({ isActive }) =>
   `transition ${isActive ? 'text-gray-900 font-medium' : 'text-gray-700 hover:text-gray-900'}`;
@@ -20,6 +28,7 @@ export function Header() {
   const { isAuthenticated, user, signOut } = useAuth();
   const { cartCount, favoritesCount } = useShop();
   const navigate = useNavigate();
+  const messagesUnread = getUnreadCount(conversations);
 
   const closeMobileMenu = () => setMobileMenuOpen(false);
 
@@ -41,20 +50,20 @@ export function Header() {
             ShewaCraft
           </Link>
 
-          <nav className="hidden md:flex items-center space-x-8" aria-label="Main">
+          <nav className="hidden md:flex items-center space-x-8 -mb-px" aria-label="Main">
             {navItems.map((item) => (
-              <NavLink key={item.to} to={item.to} end={item.end} className={navLinkClass}>
+              <NavLink key={item.to} to={item.to} end={item.end} className={desktopNavLinkClass}>
                 {item.label}
               </NavLink>
             ))}
             {isAuthenticated &&
               authNavItems.map((item) => (
-                <NavLink key={item.to} to={item.to} className={navLinkClass}>
+                <NavLink key={item.to} to={item.to} className={desktopNavLinkClass}>
                   {item.label}
                 </NavLink>
               ))}
             {user?.role === 'admin' && (
-              <NavLink to="/admin" className={navLinkClass}>
+              <NavLink to="/admin" className={desktopNavLinkClass}>
                 Admin
               </NavLink>
             )}
@@ -90,12 +99,18 @@ export function Header() {
                 <Link
                   to="/messages"
                   className="relative text-gray-700 hover:text-gray-900 transition"
-                  aria-label="Messages"
+                  aria-label={
+                    messagesUnread > 0
+                      ? `Messages, ${messagesUnread} unread`
+                      : 'Messages'
+                  }
                 >
                   <Mail className="w-5 h-5" />
-                  <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center border-2 border-white">
-                    1
-                  </span>
+                  {messagesUnread > 0 && (
+                    <span className="absolute -top-1.5 -right-1.5 bg-gray-900 text-white text-[10px] font-bold rounded-full min-w-4 h-4 px-0.5 flex items-center justify-center border-2 border-white">
+                      {messagesUnread > 99 ? '99+' : messagesUnread}
+                    </span>
+                  )}
                 </Link>
 
                 <button
@@ -182,6 +197,7 @@ export function Header() {
                     onClick={closeMobileMenu}
                   >
                     Messages
+                    {messagesUnread > 0 ? ` (${messagesUnread})` : ''}
                   </NavLink>
                   <button
                     type="button"
