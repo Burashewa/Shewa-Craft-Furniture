@@ -1,11 +1,17 @@
 import { Link } from 'react-router-dom';
 
+const focusRing =
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2';
+
 export function AuthLayout({ title, subtitle, children }) {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4 py-12">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <Link to="/" className="text-2xl font-semibold text-gray-900 tracking-tight">
+          <Link
+            to="/"
+            className={`text-2xl font-semibold text-gray-900 tracking-tight ${focusRing}`}
+          >
             ShewaCraft
           </Link>
           <h1 className="text-3xl font-semibold text-gray-900 mt-6">{title}</h1>
@@ -17,7 +23,10 @@ export function AuthLayout({ title, subtitle, children }) {
         </div>
 
         <p className="text-center mt-6">
-          <Link to="/" className="text-sm text-gray-600 hover:text-gray-900 transition">
+          <Link
+            to="/"
+            className={`text-sm text-gray-600 hover:text-gray-900 transition ${focusRing}`}
+          >
             ← Back to home
           </Link>
         </p>

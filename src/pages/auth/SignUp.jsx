@@ -8,6 +8,12 @@ import {
   validatePassword,
 } from '../../services/authService';
 
+const focusRing =
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2';
+
+const inputClass =
+  'w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 disabled:opacity-60 disabled:cursor-not-allowed';
+
 export default function SignUp() {
   const { signUp, isAuthenticated, loading: authLoading } = useAuth();
   const navigate = useNavigate();
@@ -17,6 +23,7 @@ export default function SignUp() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
   const [error, setError] = useState('');
   const [fieldErrors, setFieldErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
@@ -24,6 +31,15 @@ export default function SignUp() {
   if (!authLoading && isAuthenticated) {
     return <Navigate to="/" replace />;
   }
+
+  const clearFieldError = (field) => {
+    setFieldErrors((prev) => {
+      if (!prev[field]) return prev;
+      const next = { ...prev };
+      delete next[field];
+      return next;
+    });
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -58,7 +74,12 @@ export default function SignUp() {
 
   return (
     <AuthLayout title="Create Account" subtitle="Join ShewaCraft Furniture">
-      <form className="space-y-4" onSubmit={handleSubmit} noValidate>
+      <form
+        className="space-y-4"
+        onSubmit={handleSubmit}
+        noValidate
+        aria-busy={submitting}
+      >
         {error && (
           <div
             role="alert"
@@ -77,12 +98,20 @@ export default function SignUp() {
             type="text"
             autoComplete="name"
             value={fullName}
-            onChange={(e) => setFullName(e.target.value)}
-            className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900"
+            disabled={submitting}
+            aria-invalid={Boolean(fieldErrors.fullName)}
+            aria-describedby={fieldErrors.fullName ? 'signup-name-error' : undefined}
+            onChange={(e) => {
+              setFullName(e.target.value);
+              clearFieldError('fullName');
+            }}
+            className={inputClass}
             placeholder="Your full name"
           />
           {fieldErrors.fullName && (
-            <p className="text-red-600 text-xs mt-1.5">{fieldErrors.fullName}</p>
+            <p id="signup-name-error" className="text-red-600 text-xs mt-1.5">
+              {fieldErrors.fullName}
+            </p>
           )}
         </div>
 
@@ -95,12 +124,20 @@ export default function SignUp() {
             type="email"
             autoComplete="email"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900"
+            disabled={submitting}
+            aria-invalid={Boolean(fieldErrors.email)}
+            aria-describedby={fieldErrors.email ? 'signup-email-error' : undefined}
+            onChange={(e) => {
+              setEmail(e.target.value);
+              clearFieldError('email');
+            }}
+            className={inputClass}
             placeholder="you@example.com"
           />
           {fieldErrors.email && (
-            <p className="text-red-600 text-xs mt-1.5">{fieldErrors.email}</p>
+            <p id="signup-email-error" className="text-red-600 text-xs mt-1.5">
+              {fieldErrors.email}
+            </p>
           )}
         </div>
 
@@ -114,23 +151,34 @@ export default function SignUp() {
               type={showPassword ? 'text' : 'password'}
               autoComplete="new-password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900"
+              disabled={submitting}
+              aria-invalid={Boolean(fieldErrors.password)}
+              aria-describedby={
+                fieldErrors.password ? 'signup-password-error' : 'signup-password-hint'
+              }
+              onChange={(e) => {
+                setPassword(e.target.value);
+                clearFieldError('password');
+              }}
+              className={`${inputClass} pr-12`}
               placeholder="At least 8 characters"
             />
             <button
               type="button"
               onClick={() => setShowPassword((v) => !v)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-900"
+              disabled={submitting}
+              className={`absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-900 disabled:opacity-60 ${focusRing}`}
               aria-label={showPassword ? 'Hide password' : 'Show password'}
             >
               {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
             </button>
           </div>
           {fieldErrors.password ? (
-            <p className="text-red-600 text-xs mt-1.5">{fieldErrors.password}</p>
+            <p id="signup-password-error" className="text-red-600 text-xs mt-1.5">
+              {fieldErrors.password}
+            </p>
           ) : (
-            <p className="text-gray-500 text-xs mt-1.5">
+            <p id="signup-password-hint" className="text-gray-500 text-xs mt-1.5">
               Use 8+ characters with at least one letter and one number
             </p>
           )}
@@ -140,24 +188,45 @@ export default function SignUp() {
           <label htmlFor="signup-confirm" className="block text-sm text-gray-700 mb-1.5">
             Confirm password
           </label>
-          <input
-            id="signup-confirm"
-            type={showPassword ? 'text' : 'password'}
-            autoComplete="new-password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900"
-            placeholder="Re-enter your password"
-          />
+          <div className="relative">
+            <input
+              id="signup-confirm"
+              type={showConfirm ? 'text' : 'password'}
+              autoComplete="new-password"
+              value={confirmPassword}
+              disabled={submitting}
+              aria-invalid={Boolean(fieldErrors.confirmPassword)}
+              aria-describedby={
+                fieldErrors.confirmPassword ? 'signup-confirm-error' : undefined
+              }
+              onChange={(e) => {
+                setConfirmPassword(e.target.value);
+                clearFieldError('confirmPassword');
+              }}
+              className={`${inputClass} pr-12`}
+              placeholder="Re-enter your password"
+            />
+            <button
+              type="button"
+              onClick={() => setShowConfirm((v) => !v)}
+              disabled={submitting}
+              className={`absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-900 disabled:opacity-60 ${focusRing}`}
+              aria-label={showConfirm ? 'Hide confirm password' : 'Show confirm password'}
+            >
+              {showConfirm ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+            </button>
+          </div>
           {fieldErrors.confirmPassword && (
-            <p className="text-red-600 text-xs mt-1.5">{fieldErrors.confirmPassword}</p>
+            <p id="signup-confirm-error" className="text-red-600 text-xs mt-1.5">
+              {fieldErrors.confirmPassword}
+            </p>
           )}
         </div>
 
         <button
           type="submit"
           disabled={submitting}
-          className="w-full py-3 bg-gray-900 text-white rounded-md hover:bg-gray-800 transition disabled:opacity-60 disabled:cursor-not-allowed"
+          className={`w-full py-3 bg-gray-900 text-white rounded-md hover:bg-gray-800 transition disabled:opacity-60 disabled:cursor-not-allowed ${focusRing}`}
         >
           {submitting ? 'Creating account...' : 'Sign Up'}
         </button>
@@ -165,7 +234,10 @@ export default function SignUp() {
 
       <p className="text-sm text-gray-600 text-center mt-4">
         Already have an account?{' '}
-        <Link to="/auth/signin" className="text-gray-900 font-medium hover:underline">
+        <Link
+          to="/auth/signin"
+          className={`text-gray-900 font-medium hover:underline ${focusRing}`}
+        >
           Sign In
         </Link>
       </p>

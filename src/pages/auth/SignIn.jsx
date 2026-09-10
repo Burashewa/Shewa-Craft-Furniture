@@ -5,6 +5,12 @@ import { AuthLayout } from '../../components/auth/AuthLayout';
 import { useAuth } from '../../context/AuthContext';
 import { DEMO_CREDENTIALS, validateEmail } from '../../services/authService';
 
+const focusRing =
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2';
+
+const inputClass =
+  'w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 disabled:opacity-60 disabled:cursor-not-allowed';
+
 export default function SignIn() {
   const { signIn, isAuthenticated, user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
@@ -23,6 +29,15 @@ export default function SignIn() {
     const from = location.state?.from?.pathname || fallback;
     return <Navigate to={from} replace />;
   }
+
+  const clearFieldError = (field) => {
+    setFieldErrors((prev) => {
+      if (!prev[field]) return prev;
+      const next = { ...prev };
+      delete next[field];
+      return next;
+    });
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -51,7 +66,12 @@ export default function SignIn() {
 
   return (
     <AuthLayout title="Sign In" subtitle="Welcome back to ShewaCraft Furniture">
-      <form className="space-y-4" onSubmit={handleSubmit} noValidate>
+      <form
+        className="space-y-4"
+        onSubmit={handleSubmit}
+        noValidate
+        aria-busy={submitting}
+      >
         {error && (
           <div
             role="alert"
@@ -70,12 +90,20 @@ export default function SignIn() {
             type="email"
             autoComplete="email"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900"
+            disabled={submitting}
+            aria-invalid={Boolean(fieldErrors.email)}
+            aria-describedby={fieldErrors.email ? 'signin-email-error' : undefined}
+            onChange={(e) => {
+              setEmail(e.target.value);
+              clearFieldError('email');
+            }}
+            className={inputClass}
             placeholder="you@example.com"
           />
           {fieldErrors.email && (
-            <p className="text-red-600 text-xs mt-1.5">{fieldErrors.email}</p>
+            <p id="signin-email-error" className="text-red-600 text-xs mt-1.5">
+              {fieldErrors.email}
+            </p>
           )}
         </div>
 
@@ -89,38 +117,58 @@ export default function SignIn() {
               type={showPassword ? 'text' : 'password'}
               autoComplete="current-password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900"
+              disabled={submitting}
+              aria-invalid={Boolean(fieldErrors.password)}
+              aria-describedby={
+                fieldErrors.password ? 'signin-password-error' : undefined
+              }
+              onChange={(e) => {
+                setPassword(e.target.value);
+                clearFieldError('password');
+              }}
+              className={`${inputClass} pr-12`}
               placeholder="Enter your password"
             />
             <button
               type="button"
               onClick={() => setShowPassword((v) => !v)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-900"
+              disabled={submitting}
+              className={`absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-900 disabled:opacity-60 ${focusRing}`}
               aria-label={showPassword ? 'Hide password' : 'Show password'}
             >
               {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
             </button>
           </div>
           {fieldErrors.password && (
-            <p className="text-red-600 text-xs mt-1.5">{fieldErrors.password}</p>
+            <p id="signin-password-error" className="text-red-600 text-xs mt-1.5">
+              {fieldErrors.password}
+            </p>
           )}
         </div>
 
-        <label className="flex items-center gap-2 text-sm text-gray-700">
-          <input
-            type="checkbox"
-            checked={remember}
-            onChange={(e) => setRemember(e.target.checked)}
-            className="rounded border-gray-300"
-          />
-          Remember me for 7 days
-        </label>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <label className="flex items-center gap-2 text-sm text-gray-700">
+            <input
+              type="checkbox"
+              checked={remember}
+              disabled={submitting}
+              onChange={(e) => setRemember(e.target.checked)}
+              className={`rounded border-gray-300 ${focusRing}`}
+            />
+            Remember me for 7 days
+          </label>
+          <Link
+            to="/auth/forgot-password"
+            className={`text-sm text-gray-900 font-medium hover:underline ${focusRing}`}
+          >
+            Forgot password?
+          </Link>
+        </div>
 
         <button
           type="submit"
           disabled={submitting}
-          className="w-full py-3 bg-gray-900 text-white rounded-md hover:bg-gray-800 transition disabled:opacity-60 disabled:cursor-not-allowed"
+          className={`w-full py-3 bg-gray-900 text-white rounded-md hover:bg-gray-800 transition disabled:opacity-60 disabled:cursor-not-allowed ${focusRing}`}
         >
           {submitting ? 'Signing in...' : 'Sign In'}
         </button>
@@ -128,7 +176,10 @@ export default function SignIn() {
 
       <p className="text-sm text-gray-600 text-center mt-4">
         Don&apos;t have an account?{' '}
-        <Link to="/auth/signup" className="text-gray-900 font-medium hover:underline">
+        <Link
+          to="/auth/signup"
+          className={`text-gray-900 font-medium hover:underline ${focusRing}`}
+        >
           Sign Up
         </Link>
       </p>
