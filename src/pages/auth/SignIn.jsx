@@ -71,7 +71,7 @@ export default function SignIn() {
             autoComplete="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full px-4 py-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-gray-900"
+            className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900"
             placeholder="you@example.com"
           />
           {fieldErrors.email && (
@@ -90,7 +90,7 @@ export default function SignIn() {
               autoComplete="current-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-3 pr-12 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-gray-900"
+              className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900"
               placeholder="Enter your password"
             />
             <button
@@ -120,7 +120,7 @@ export default function SignIn() {
         <button
           type="submit"
           disabled={submitting}
-          className="w-full py-3 bg-gray-900 text-white hover:bg-gray-800 transition disabled:opacity-60 disabled:cursor-not-allowed"
+          className="w-full py-3 bg-gray-900 text-white rounded-md hover:bg-gray-800 transition disabled:opacity-60 disabled:cursor-not-allowed"
         >
           {submitting ? 'Signing in...' : 'Sign In'}
         </button>

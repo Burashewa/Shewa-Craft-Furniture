@@ -1,4 +1,5 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { motion, useReducedMotion } from 'framer-motion';
 import {
   Search,
   Eye,
@@ -19,12 +20,20 @@ import * as XLSX from 'xlsx';
 import { useToast } from '../../context/ToastContext';
 import {
   ORDER_STATUS_FLOW,
+  canTransition,
   formatOrderStamp,
   formatOrderStatus,
   getOrderStatusSteps,
   getStatusClasses,
   hasOrderRating,
 } from '../../data/orders';
+import { ConfirmDialog } from '../ui/ConfirmDialog';
+import { ProductStatCard } from './dashboard/ProductStatCard';
+
+const MotionDiv = motion.div;
+
+const focusRing =
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2';
 
 const emptyConfirmation = {
   destinationConfirmedAt: null,
@@ -33,7 +42,7 @@ const emptyConfirmation = {
   review: '',
 };
 
-const INITIAL_ORDERS = [
+export const INITIAL_ORDERS = [
   {
     id: 'ORD-001',
     customer: {
@@ -256,13 +265,24 @@ function todayStamp() {
   return new Date().toISOString().slice(0, 10);
 }
 
-export function OrdersManagement({ onMessageCustomer }) {
+export function OrdersManagement({
+  onMessageCustomer,
+  orders,
+  onOrdersChange,
+  initialStatus = 'all',
+}) {
   const { showToast } = useToast();
-  const [orders, setOrders] = useState(INITIAL_ORDERS);
+  const setOrders = onOrdersChange;
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [filterStatus, setFilterStatus] = useState('all');
+  const [filterStatus, setFilterStatus] = useState(initialStatus || 'all');
   const [sortBy, setSortBy] = useState('date-desc');
+  const [confirm, setConfirm] = useState(null);
+  const prefersReducedMotion = useReducedMotion();
+
+  useEffect(() => {
+    setFilterStatus(initialStatus || 'all');
+  }, [initialStatus]);
 
   const stats = useMemo(() => {
     const total = orders.length;
@@ -327,6 +347,9 @@ export function OrdersManagement({ onMessageCustomer }) {
   }, [orders, searchQuery, filterStatus, sortBy]);
 
   const updateOrderStatus = (orderId, nextStatus) => {
+    const current = orders.find((item) => item.id === orderId);
+    if (!current || !canTransition(current.status, nextStatus)) return;
+
     const stamp = todayStamp();
     setOrders((prev) =>
       prev.map((item) =>
@@ -344,64 +367,66 @@ export function OrdersManagement({ onMessageCustomer }) {
 
   const handleApprove = (orderId) => {
     const order = orders.find((o) => o.id === orderId);
-    if (
-      !window.confirm(
-        `Approve ${orderId} for ${order?.customer?.name || 'this customer'}? Payment will be marked as verified.`
-      )
-    ) {
-      return;
-    }
-    updateOrderStatus(orderId, 'approved');
-    showToast({
-      type: 'success',
-      title: 'Order approved',
-      message: `${orderId} for ${order?.customer?.name || 'customer'} was approved.`,
+    setConfirm({
+      title: 'Approve order?',
+      message: `Approve ${orderId} for ${order?.customer?.name || 'this customer'}? Payment will be marked as verified.`,
+      confirmLabel: 'Approve',
+      onConfirm: () => {
+        updateOrderStatus(orderId, 'approved');
+        showToast({
+          type: 'success',
+          title: 'Order approved',
+          message: `${orderId} for ${order?.customer?.name || 'customer'} was approved.`,
+        });
+        setConfirm(null);
+      },
     });
   };
 
   const handleReject = (orderId) => {
     const order = orders.find((o) => o.id === orderId);
-    if (
-      !window.confirm(
-        `Reject ${orderId}? The customer will need to place a new order or resubmit payment.`
-      )
-    ) {
-      return;
-    }
-    updateOrderStatus(orderId, 'rejected');
-    showToast({
-      type: 'success',
-      title: 'Order rejected',
-      message: `${orderId} for ${order?.customer?.name || 'customer'} was rejected.`,
+    setConfirm({
+      title: 'Reject order?',
+      message: `Reject ${orderId}? The customer will need to place a new order or resubmit payment.`,
+      confirmLabel: 'Reject',
+      onConfirm: () => {
+        updateOrderStatus(orderId, 'rejected');
+        showToast({
+          type: 'success',
+          title: 'Order rejected',
+          message: `${orderId} for ${order?.customer?.name || 'customer'} was rejected.`,
+        });
+        setConfirm(null);
+      },
     });
   };
 
   const handleShip = (orderId) => {
     const order = orders.find((o) => o.id === orderId);
-    if (
-      !window.confirm(
-        `Mark ${orderId} as shipped to ${order?.customer?.name || 'the customer'}?`
-      )
-    ) {
-      return;
-    }
-    updateOrderStatus(orderId, 'shipped');
-    showToast({
-      type: 'success',
-      title: 'Order marked as shipped',
-      message: `${orderId} for ${order?.customer?.name || 'customer'} is now shipped.`,
+    setConfirm({
+      title: 'Mark as shipped?',
+      message: `Mark ${orderId} as shipped to ${order?.customer?.name || 'the customer'}?`,
+      confirmLabel: 'Mark shipped',
+      onConfirm: () => {
+        updateOrderStatus(orderId, 'shipped');
+        showToast({
+          type: 'success',
+          title: 'Order marked as shipped',
+          message: `${orderId} for ${order?.customer?.name || 'customer'} is now shipped.`,
+        });
+        setConfirm(null);
+      },
     });
   };
 
   const handleDeliver = (orderId) => {
     const order = orders.find((o) => o.id === orderId);
-    if (
-      !window.confirm(
-        `Confirm that ${orderId} reached ${order?.customer?.name || 'the customer'}?`
-      )
-    ) {
-      return;
-    }
+    if (!order || !canTransition(order.status, 'delivered')) return;
+    setConfirm({
+      title: 'Confirm delivery?',
+      message: `Confirm that ${orderId} reached ${order?.customer?.name || 'the customer'}?`,
+      confirmLabel: 'Confirm',
+      onConfirm: () => {
     const stamp = todayStamp();
     setOrders((prev) =>
       prev.map((item) =>
@@ -429,6 +454,9 @@ export function OrdersManagement({ onMessageCustomer }) {
       type: 'success',
       title: 'Destination confirmed',
       message: `${orderId} is marked as delivered. Waiting for the customer to accept.`,
+    });
+        setConfirm(null);
+      },
     });
   };
 
@@ -522,8 +550,16 @@ export function OrdersManagement({ onMessageCustomer }) {
     ? getOrderStatusSteps(selectedOrder.status)
     : ORDER_STATUS_FLOW;
 
+  const entrance = prefersReducedMotion
+    ? { initial: { opacity: 1 }, animate: { opacity: 1 } }
+    : { initial: { opacity: 0, y: 10 }, animate: { opacity: 1, y: 0 } };
+
   return (
-    <div className="lg:pt-0 pt-16">
+    <MotionDiv
+      className="lg:pt-0 pt-16"
+      {...entrance}
+      transition={{ duration: prefersReducedMotion ? 0 : 0.2 }}
+    >
       <div className="bg-white border-b border-gray-200 p-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
@@ -535,7 +571,7 @@ export function OrdersManagement({ onMessageCustomer }) {
           <button
             type="button"
             onClick={handleExport}
-            className="inline-flex items-center justify-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 hover:bg-gray-50 transition"
+            className={`inline-flex items-center justify-center gap-2 px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition duration-200 ${focusRing}`}
           >
             <Download className="w-5 h-5" />
             Export
@@ -545,80 +581,67 @@ export function OrdersManagement({ onMessageCustomer }) {
 
       <div className="p-6 space-y-6">
         <section className="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-7 gap-4">
-          <div className="bg-white border border-gray-200 p-4">
-            <div className="flex items-center gap-2 text-xs text-gray-500 mb-1">
-              <ShoppingCart className="w-3.5 h-3.5" />
-              Total orders
-            </div>
-            <p className="text-2xl text-gray-900">{stats.total}</p>
-          </div>
-          <button
-            type="button"
+          <ProductStatCard
+            label="Total orders"
+            value={stats.total}
+            icon={ShoppingCart}
+            active={filterStatus === 'all'}
+            onClick={() => setFilterStatus('all')}
+          />
+          <ProductStatCard
+            label="Pending"
+            value={stats.pending}
+            icon={Clock}
+            active={filterStatus === 'pending'}
             onClick={() => setFilterStatus('pending')}
-            className="text-left bg-white border border-gray-200 p-4 hover:border-gray-400 transition"
-          >
-            <div className="flex items-center gap-2 text-xs text-gray-500 mb-1">
-              <Clock className="w-3.5 h-3.5" />
-              Pending
-            </div>
-            <p className="text-2xl text-gray-900">{stats.pending}</p>
-          </button>
-          <button
-            type="button"
+          />
+          <ProductStatCard
+            label="Approved"
+            value={stats.approved}
+            active={filterStatus === 'approved'}
             onClick={() => setFilterStatus('approved')}
-            className="text-left bg-white border border-gray-200 p-4 hover:border-gray-400 transition"
-          >
-            <p className="text-xs text-gray-500 mb-1">Approved</p>
-            <p className="text-2xl text-gray-900">{stats.approved}</p>
-          </button>
-          <button
-            type="button"
+          />
+          <ProductStatCard
+            label="Shipped"
+            value={stats.shipped}
+            icon={Truck}
+            active={filterStatus === 'shipped'}
             onClick={() => setFilterStatus('shipped')}
-            className="text-left bg-white border border-gray-200 p-4 hover:border-gray-400 transition"
-          >
-            <div className="flex items-center gap-2 text-xs text-gray-500 mb-1">
-              <Truck className="w-3.5 h-3.5" />
-              Shipped
-            </div>
-            <p className="text-2xl text-gray-900">{stats.shipped}</p>
-          </button>
-          <button
-            type="button"
+          />
+          <ProductStatCard
+            label="Delivered"
+            value={stats.delivered}
+            icon={PackageCheck}
+            active={filterStatus === 'delivered'}
             onClick={() => setFilterStatus('delivered')}
-            className="text-left bg-white border border-gray-200 p-4 hover:border-gray-400 transition"
-          >
-            <div className="flex items-center gap-2 text-xs text-gray-500 mb-1">
-              <PackageCheck className="w-3.5 h-3.5" />
-              Delivered
-            </div>
-            <p className="text-2xl text-gray-900">{stats.delivered}</p>
-          </button>
-          <button
-            type="button"
+          />
+          <ProductStatCard
+            label="Completed"
+            value={stats.completed}
+            icon={CircleCheck}
+            active={filterStatus === 'completed'}
             onClick={() => setFilterStatus('completed')}
-            className="text-left bg-white border border-gray-200 p-4 hover:border-gray-400 transition"
+          />
+          <ProductStatCard
+            label="Active revenue"
+            value={`$${stats.revenue.toLocaleString()}`}
+            active={filterStatus === 'rejected'}
+            className="col-span-2 xl:col-span-1"
           >
-            <div className="flex items-center gap-2 text-xs text-gray-500 mb-1">
-              <CircleCheck className="w-3.5 h-3.5" />
-              Completed
-            </div>
-            <p className="text-2xl text-gray-900">{stats.completed}</p>
-          </button>
-          <div className="bg-white border border-gray-200 p-4 col-span-2 xl:col-span-1">
-            <p className="text-xs text-gray-500 mb-1">Active revenue</p>
-            <p className="text-2xl text-gray-900">
-              ${stats.revenue.toLocaleString()}
-            </p>
-            {stats.rejected > 0 && (
-              <p className="text-xs text-rose-700 mt-1 inline-flex items-center gap-1">
-                <Ban className="w-3.5 h-3.5" />
+            {stats.rejected > 0 ? (
+              <button
+                type="button"
+                onClick={() => setFilterStatus('rejected')}
+                className={`mt-1 text-xs text-rose-700 inline-flex items-center gap-1 hover:text-rose-800 transition duration-200 ${focusRing}`}
+              >
+                <Ban className="w-3.5 h-3.5" aria-hidden />
                 {stats.rejected} rejected
-              </p>
-            )}
-          </div>
+              </button>
+            ) : null}
+          </ProductStatCard>
         </section>
 
-        <section className="bg-white border border-gray-200 p-4 md:p-5">
+        <section className="bg-white border border-gray-200 rounded-lg p-4 md:p-5">
           <div className="flex items-center gap-2 text-sm text-gray-700 mb-3">
             <Filter className="w-4 h-4" />
             Search & filters
@@ -631,14 +654,14 @@ export function OrdersManagement({ onMessageCustomer }) {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search order ID, customer, product, bank, or reference..."
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-900"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md transition duration-200 focus:outline-none focus:ring-2 focus:ring-gray-900"
                 aria-label="Search orders"
               />
             </div>
             <select
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
-              className="px-3 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-900"
+              className="px-3 py-2 border border-gray-300 rounded-md transition duration-200 focus:outline-none focus:ring-2 focus:ring-gray-900"
               aria-label="Filter by status"
             >
               <option value="all">All statuses</option>
@@ -652,7 +675,7 @@ export function OrdersManagement({ onMessageCustomer }) {
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              className="px-3 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-900"
+              className="px-3 py-2 border border-gray-300 rounded-md transition duration-200 focus:outline-none focus:ring-2 focus:ring-gray-900"
               aria-label="Sort orders"
             >
               <option value="date-desc">Sort: Newest first</option>
@@ -677,7 +700,7 @@ export function OrdersManagement({ onMessageCustomer }) {
                   setFilterStatus('all');
                   setSearchQuery('');
                 }}
-                className="text-sm text-gray-700 hover:text-gray-900 underline underline-offset-2"
+                className={`text-sm text-gray-700 hover:text-gray-900 underline underline-offset-2 transition duration-200 ${focusRing}`}
               >
                 Clear filters
               </button>
@@ -685,7 +708,7 @@ export function OrdersManagement({ onMessageCustomer }) {
           </div>
         </section>
 
-        <section className="bg-white border border-gray-200 overflow-hidden">
+        <section className="bg-white border border-gray-200 rounded-lg overflow-hidden">
           {filteredOrders.length === 0 ? (
             <div className="p-12 text-center">
               <ShoppingCart className="w-12 h-12 text-gray-300 mx-auto mb-3" />
@@ -699,7 +722,7 @@ export function OrdersManagement({ onMessageCustomer }) {
                   setFilterStatus('all');
                   setSearchQuery('');
                 }}
-                className="mt-4 px-4 py-2 border border-gray-300 text-gray-700 hover:bg-gray-50 transition"
+                className={`mt-4 px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition duration-200 ${focusRing}`}
               >
                 Clear filters
               </button>
@@ -763,7 +786,7 @@ export function OrdersManagement({ onMessageCustomer }) {
                           <img
                             src={order.product.image}
                             alt=""
-                            className="w-12 h-12 object-cover border border-gray-200 shrink-0"
+                            className="w-12 h-12 object-cover border border-gray-200 rounded-md shrink-0"
                           />
                           <div className="min-w-0">
                             <p className="text-sm text-gray-900 truncate">
@@ -780,7 +803,7 @@ export function OrdersManagement({ onMessageCustomer }) {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span
-                          className={`inline-block px-2 py-1 text-xs border ${getStatusClasses(
+                          className={`inline-block px-2 py-1 text-xs border rounded-sm ${getStatusClasses(
                             order.status
                           )}`}
                         >
@@ -794,7 +817,7 @@ export function OrdersManagement({ onMessageCustomer }) {
                         <button
                           type="button"
                           onClick={() => setSelectedOrder(order)}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-700 hover:text-gray-900 hover:bg-gray-100 transition"
+                          className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-700 hover:text-gray-900 hover:bg-gray-100 transition duration-200 ${focusRing}`}
                           aria-label={`View order ${order.id}`}
                         >
                           <Eye className="w-4 h-4" />
@@ -812,7 +835,7 @@ export function OrdersManagement({ onMessageCustomer }) {
 
       {selectedOrder && (
         <div className="fixed inset-0 z-50 bg-black/50 flex items-start md:items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white max-w-3xl w-full my-8 max-h-[92vh] overflow-y-auto border border-gray-200">
+          <div className="bg-white max-w-3xl w-full my-8 max-h-[92vh] overflow-y-auto border border-gray-200 rounded-xl">
             <div className="p-6 border-b border-gray-200 flex items-start justify-between gap-4 sticky top-0 bg-white z-10">
               <div>
                 <h2 className="text-2xl text-gray-900">
@@ -845,7 +868,7 @@ export function OrdersManagement({ onMessageCustomer }) {
                     return (
                       <span
                         key={step}
-                        className={`px-3 py-1.5 text-xs border capitalize ${
+                        className={`px-3 py-1.5 text-xs border rounded-sm capitalize ${
                           active
                             ? getStatusClasses(step)
                             : passed
@@ -867,7 +890,7 @@ export function OrdersManagement({ onMessageCustomer }) {
                   <h3 className="text-sm font-medium text-gray-700 mb-3">
                     Destination check
                   </h3>
-                  <div className="bg-gray-50 border border-gray-200 p-4 space-y-2 text-sm">
+                  <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 space-y-2 text-sm">
                     {selectedOrder.status === 'shipped' && (
                       <p className="text-gray-700">
                         Awaiting destination confirmation. Confirm when the
@@ -937,7 +960,7 @@ export function OrdersManagement({ onMessageCustomer }) {
 
               <div>
                 <h3 className="text-lg text-gray-900 mb-3">Customer</h3>
-                <div className="bg-gray-50 border border-gray-200 p-4">
+                <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
                   <div className="flex items-start gap-4">
                     <img
                       src={selectedOrder.customer.avatar}
@@ -963,12 +986,12 @@ export function OrdersManagement({ onMessageCustomer }) {
 
               <div>
                 <h3 className="text-lg text-gray-900 mb-3">Product</h3>
-                <div className="bg-gray-50 border border-gray-200 p-4">
+                <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
                   <div className="flex flex-col sm:flex-row gap-4">
                     <img
                       src={selectedOrder.product.image}
                       alt={selectedOrder.product.name}
-                      className="w-full sm:w-40 h-36 object-cover border border-gray-200"
+                      className="w-full sm:w-40 h-36 object-cover border border-gray-200 rounded-md"
                     />
                     <div className="space-y-2 text-sm">
                       <p className="text-base font-medium text-gray-900">
@@ -991,7 +1014,7 @@ export function OrdersManagement({ onMessageCustomer }) {
 
               <div>
                 <h3 className="text-lg text-gray-900 mb-3">Payment</h3>
-                <div className="bg-gray-50 border border-gray-200 p-4 space-y-3">
+                <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 space-y-3">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
                     <p>
                       <span className="font-medium text-gray-900">Bank:</span>{' '}
@@ -1013,7 +1036,7 @@ export function OrdersManagement({ onMessageCustomer }) {
                     <img
                       src={selectedOrder.payment.screenshot}
                       alt="Payment proof"
-                      className="w-full max-w-md border border-gray-300"
+                      className="w-full max-w-md border border-gray-300 rounded-md"
                     />
                   </div>
                 </div>
@@ -1022,7 +1045,7 @@ export function OrdersManagement({ onMessageCustomer }) {
               {selectedOrder.notes && (
                 <div>
                   <h3 className="text-lg text-gray-900 mb-3">Internal notes</h3>
-                  <div className="bg-gray-50 border border-gray-200 p-4 text-sm text-gray-700">
+                  <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 text-sm text-gray-700">
                     {selectedOrder.notes}
                   </div>
                 </div>
@@ -1033,7 +1056,7 @@ export function OrdersManagement({ onMessageCustomer }) {
               <button
                 type="button"
                 onClick={handleMessageCustomer}
-                className="flex items-center gap-2 px-5 py-2 border border-gray-900 text-gray-900 hover:bg-gray-50 transition"
+                className="flex items-center gap-2 px-5 py-2 border border-gray-900 rounded-md text-gray-900 hover:bg-gray-50 transition"
               >
                 <MessageSquare className="w-5 h-5" />
                 Message customer
@@ -1044,7 +1067,7 @@ export function OrdersManagement({ onMessageCustomer }) {
                   <button
                     type="button"
                     onClick={() => handleReject(selectedOrder.id)}
-                    className="flex items-center gap-2 px-5 py-2 border border-rose-300 text-rose-700 hover:bg-rose-50 transition"
+                    className="flex items-center gap-2 px-5 py-2 border border-rose-300 rounded-md text-rose-700 hover:bg-rose-50 transition"
                   >
                     <XIcon className="w-5 h-5" />
                     Reject
@@ -1052,7 +1075,7 @@ export function OrdersManagement({ onMessageCustomer }) {
                   <button
                     type="button"
                     onClick={() => handleApprove(selectedOrder.id)}
-                    className="flex items-center gap-2 px-5 py-2 bg-gray-900 text-white hover:bg-gray-800 transition"
+                    className="flex items-center gap-2 px-5 py-2 bg-gray-900 text-white rounded-md hover:bg-gray-800 transition"
                   >
                     <Check className="w-5 h-5" />
                     Approve order
@@ -1063,7 +1086,7 @@ export function OrdersManagement({ onMessageCustomer }) {
                 <button
                   type="button"
                   onClick={() => handleShip(selectedOrder.id)}
-                  className="flex items-center gap-2 px-5 py-2 bg-gray-900 text-white hover:bg-gray-800 transition"
+                  className="flex items-center gap-2 px-5 py-2 bg-gray-900 text-white rounded-md hover:bg-gray-800 transition"
                 >
                   <Truck className="w-5 h-5" />
                   Mark as shipped
@@ -1073,7 +1096,7 @@ export function OrdersManagement({ onMessageCustomer }) {
                 <button
                   type="button"
                   onClick={() => handleDeliver(selectedOrder.id)}
-                  className="flex items-center gap-2 px-5 py-2 bg-gray-900 text-white hover:bg-gray-800 transition"
+                  className="flex items-center gap-2 px-5 py-2 bg-gray-900 text-white rounded-md hover:bg-gray-800 transition"
                 >
                   <PackageCheck className="w-5 h-5" />
                   Confirm destination reached
@@ -1085,7 +1108,7 @@ export function OrdersManagement({ onMessageCustomer }) {
                 <button
                   type="button"
                   onClick={() => setSelectedOrder(null)}
-                  className="px-5 py-2 border border-gray-300 text-gray-700 hover:bg-gray-50 transition"
+                  className="px-5 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition"
                 >
                   Close
                 </button>
@@ -1094,6 +1117,15 @@ export function OrdersManagement({ onMessageCustomer }) {
           </div>
         </div>
       )}
-    </div>
+
+      <ConfirmDialog
+        open={Boolean(confirm)}
+        title={confirm?.title}
+        message={confirm?.message}
+        confirmLabel={confirm?.confirmLabel}
+        onCancel={() => setConfirm(null)}
+        onConfirm={confirm?.onConfirm}
+      />
+    </MotionDiv>
   );
 }

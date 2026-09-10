@@ -260,7 +260,7 @@ export function Testimonials() {
           <button
             type="button"
             onClick={() => nudgeBy(-1)}
-            className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1 md:-translate-x-4 inline-flex items-center justify-center w-11 h-11 bg-white border border-gray-200 shadow-sm text-gray-700 hover:text-gray-900 hover:bg-gray-50 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900"
+            className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1 md:-translate-x-4 inline-flex items-center justify-center w-11 h-11 bg-white border border-gray-200 rounded-md shadow-sm text-gray-700 hover:text-gray-900 hover:bg-gray-50 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900"
             aria-label="Previous testimonial"
           >
             <ChevronLeft className="w-5 h-5" />
@@ -268,7 +268,7 @@ export function Testimonials() {
           <button
             type="button"
             onClick={() => nudgeBy(1)}
-            className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1 md:translate-x-4 inline-flex items-center justify-center w-11 h-11 bg-white border border-gray-200 shadow-sm text-gray-700 hover:text-gray-900 hover:bg-gray-50 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900"
+            className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1 md:translate-x-4 inline-flex items-center justify-center w-11 h-11 bg-white border border-gray-200 rounded-md shadow-sm text-gray-700 hover:text-gray-900 hover:bg-gray-50 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900"
             aria-label="Next testimonial"
           >
             <ChevronRight className="w-5 h-5" />

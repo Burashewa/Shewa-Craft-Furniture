@@ -1,7 +1,9 @@
 import { createContext, useCallback, useContext, useMemo, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { CheckCircle2, Heart, X } from 'lucide-react';
+import { CheckCircle2, CircleAlert, Heart, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
+
+const MotionDiv = motion.div;
 
 const ToastContext = createContext(null);
 
@@ -35,17 +37,19 @@ export function ToastProvider({ children }) {
       >
         <AnimatePresence>
           {toasts.map((toast) => (
-            <motion.div
+            <MotionDiv
               key={toast.id}
               initial={{ opacity: 0, y: 16, scale: 0.98 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 8, scale: 0.98 }}
-              className="pointer-events-auto bg-white border border-gray-200 shadow-xl p-4"
+              className="pointer-events-auto bg-white border border-gray-200 rounded-lg shadow-xl p-4"
             >
               <div className="flex items-start gap-3">
                 <div className="mt-0.5 shrink-0">
                   {toast.type === 'favorite' ? (
                     <Heart className="w-5 h-5 fill-gray-900 text-gray-900" />
+                  ) : toast.type === 'error' ? (
+                    <CircleAlert className="w-5 h-5 text-gray-900" />
                   ) : (
                     <CheckCircle2 className="w-5 h-5 text-gray-900" />
                   )}
@@ -76,7 +80,7 @@ export function ToastProvider({ children }) {
                   <X className="w-4 h-4" />
                 </button>
               </div>
-            </motion.div>
+            </MotionDiv>
           ))}
         </AnimatePresence>
       </div>

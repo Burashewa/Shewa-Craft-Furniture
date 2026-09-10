@@ -78,7 +78,7 @@ export default function SignUp() {
             autoComplete="name"
             value={fullName}
             onChange={(e) => setFullName(e.target.value)}
-            className="w-full px-4 py-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-gray-900"
+            className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900"
             placeholder="Your full name"
           />
           {fieldErrors.fullName && (
@@ -96,7 +96,7 @@ export default function SignUp() {
             autoComplete="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full px-4 py-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-gray-900"
+            className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900"
             placeholder="you@example.com"
           />
           {fieldErrors.email && (
@@ -115,7 +115,7 @@ export default function SignUp() {
               autoComplete="new-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-3 pr-12 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-gray-900"
+              className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900"
               placeholder="At least 8 characters"
             />
             <button
@@ -146,7 +146,7 @@ export default function SignUp() {
             autoComplete="new-password"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
-            className="w-full px-4 py-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-gray-900"
+            className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900"
             placeholder="Re-enter your password"
           />
           {fieldErrors.confirmPassword && (
@@ -157,7 +157,7 @@ export default function SignUp() {
         <button
           type="submit"
           disabled={submitting}
-          className="w-full py-3 bg-gray-900 text-white hover:bg-gray-800 transition disabled:opacity-60 disabled:cursor-not-allowed"
+          className="w-full py-3 bg-gray-900 text-white rounded-md hover:bg-gray-800 transition disabled:opacity-60 disabled:cursor-not-allowed"
         >
           {submitting ? 'Creating account...' : 'Sign Up'}
         </button>

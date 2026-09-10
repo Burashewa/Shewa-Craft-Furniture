@@ -35,7 +35,11 @@ export function Footer() {
 
           {/* Brand */}
           <div className="space-y-4">
-            <h3 className="text-2xl font-bold text-white">ShewaCraft Furniture</h3>
+            <h3 className="text-2xl font-bold text-white">
+              <Link to="/" className="hover:text-gray-200 transition duration-200">
+                ShewaCraft Furniture
+              </Link>
+            </h3>
             <p className="text-gray-400">
               Creating beautiful spaces with premium furniture since 2020.
             </p>
@@ -48,7 +52,7 @@ export function Footer() {
                     href={social.href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-800 hover:bg-gray-700 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500"
+                    className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-800 hover:bg-gray-700 hover:scale-105 transition duration-200 motion-reduce:transform-none focus:outline-none focus:ring-2 focus:ring-gray-500"
                     aria-label={social.label}
                   >
                     <Icon className="w-5 h-5" />
@@ -66,7 +70,7 @@ export function Footer() {
                 <li key={item.label}>
                   <Link
                     to={item.to}
-                    className="text-gray-400 hover:text-white transition-colors"
+                    className="text-gray-400 hover:text-white transition duration-200"
                   >
                     {item.label}
                   </Link>
@@ -83,7 +87,7 @@ export function Footer() {
                 <li key={item.label}>
                   <Link
                     to={item.to}
-                    className="text-gray-400 hover:text-white transition-colors"
+                    className="text-gray-400 hover:text-white transition duration-200"
                   >
                     {item.label}
                   </Link>
@@ -101,7 +105,7 @@ export function Footer() {
               <Link
                 key={policy.label}
                 to={policy.to}
-                className="hover:text-white transition-colors"
+                className="hover:text-white transition duration-200"
               >
                 {policy.label}
               </Link>

@@ -42,11 +42,11 @@ export function ConversationList({
                   <img
                     src={thumb}
                     alt=""
-                    className="w-11 h-11 object-cover bg-gray-100"
+                    className="w-11 h-11 object-cover bg-gray-100 rounded-md"
                   />
                   {hasUnread && (
                     <span
-                      className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-gray-900 border-2 border-white"
+                      className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-gray-900 rounded-full border-2 border-white"
                       aria-label={`${conversation.unread} unread`}
                     />
                   )}
@@ -76,7 +76,7 @@ export function ConversationList({
                     {conversation.preview}
                   </p>
                   {hasUnread && (
-                    <span className="inline-flex mt-2 px-2 py-0.5 text-xs border border-gray-200 bg-white text-gray-800">
+                    <span className="inline-flex mt-2 px-2 py-0.5 text-xs border border-gray-200 rounded-sm bg-white text-gray-800">
                       {conversation.unread} new
                     </span>
                   )}

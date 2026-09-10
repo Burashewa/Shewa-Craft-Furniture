@@ -2,7 +2,7 @@ import { Trash2 } from 'lucide-react';
 
 export function SavedItem({ item, onMoveToCart, onRemove }) {
   return (
-    <article className="bg-white border border-gray-200 p-4 sm:p-5">
+    <article className="bg-white border border-gray-200 rounded-lg p-4 sm:p-5">
       <div className="flex gap-4">
         <div className="w-20 h-20 sm:w-24 sm:h-24 shrink-0 bg-gray-100 overflow-hidden">
           <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
@@ -31,7 +31,7 @@ export function SavedItem({ item, onMoveToCart, onRemove }) {
             type="button"
             onClick={() => onMoveToCart(item)}
             disabled={!item.inStock}
-            className="mt-2 px-4 py-2 border border-gray-900 text-sm text-gray-900 hover:bg-gray-50 transition disabled:border-gray-300 disabled:text-gray-400 disabled:cursor-not-allowed"
+            className="mt-2 px-4 py-2 border border-gray-900 rounded-md text-sm text-gray-900 hover:bg-gray-50 transition disabled:border-gray-300 disabled:text-gray-400 disabled:cursor-not-allowed"
           >
             Move to cart
           </button>

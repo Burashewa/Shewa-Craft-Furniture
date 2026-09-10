@@ -41,6 +41,13 @@ export function CatalogPage() {
     handleCategoryChange('All');
   };
 
+  const resetSidebarFilters = () => {
+    setPriceRange('All');
+    handleCategoryChange('All');
+  };
+
+  const sidebarFiltersIdle = selectedCategory === 'All' && priceRange === 'All';
+
   const filteredProducts = useMemo(
     () =>
       filterAndSortProducts(products, {
@@ -65,16 +72,18 @@ export function CatalogPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex flex-col lg:flex-row gap-8 lg:gap-10">
           <aside className="hidden lg:block w-56 shrink-0">
-            <div className="sticky top-24 border border-gray-200 bg-white p-4 md:p-5">
+            <div className="sticky top-24 border border-gray-200 bg-white rounded-lg p-4 md:p-5">
               <h2 className="text-sm font-medium uppercase tracking-wider text-gray-500 mb-6">
                 Filters
               </h2>
               <FilterPanel
+                namePrefix="desktop"
                 selectedCategory={selectedCategory}
                 onCategoryChange={handleCategoryChange}
                 priceRange={priceRange}
                 onPriceRangeChange={setPriceRange}
-                onReset={resetFilters}
+                onReset={resetSidebarFilters}
+                resetDisabled={sidebarFiltersIdle}
               />
             </div>
           </aside>
@@ -119,7 +128,8 @@ export function CatalogPage() {
         onCategoryChange={handleCategoryChange}
         priceRange={priceRange}
         onPriceRangeChange={setPriceRange}
-        onReset={resetFilters}
+        onReset={resetSidebarFilters}
+        resetDisabled={sidebarFiltersIdle}
       />
 
       {selectedProduct && (

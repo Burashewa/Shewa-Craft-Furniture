@@ -127,6 +127,16 @@ export function getOrderStatusSteps(status) {
   return ORDER_STATUS_FLOW;
 }
 
+export function canTransition(from, to) {
+  const current = (from || '').toLowerCase();
+  const next = (to || '').toLowerCase();
+  if (current === 'pending') return next === 'approved' || next === 'rejected';
+  if (current === 'approved') return next === 'shipped';
+  if (current === 'shipped') return next === 'delivered';
+  if (current === 'delivered') return next === 'completed';
+  return false;
+}
+
 export function hasOrderRating(order) {
   return Number(order?.rating) >= 1;
 }

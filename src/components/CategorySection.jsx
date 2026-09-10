@@ -60,7 +60,7 @@ export function CategorySection() {
               <Link
                 key={category.name}
                 to={`/products?category=${encodeURIComponent(category.name)}`}
-                className="group relative aspect-[16/9] sm:aspect-[4/3] overflow-hidden"
+                className="group relative aspect-[16/9] sm:aspect-[4/3] overflow-hidden rounded-lg"
               >
                 <img
                   src={category.image}

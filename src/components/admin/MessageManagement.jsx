@@ -1,7 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
+import { motion, useReducedMotion } from 'framer-motion';
 import { Search, Mail, Send, ArrowLeft, Package } from 'lucide-react';
 
-const INITIAL_CONVERSATIONS = [
+const MotionDiv = motion.div;
+
+const focusRing =
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2';
+
+export const INITIAL_CONVERSATIONS = [
   {
     id: '1',
     customerId: 'cust-001',
@@ -100,8 +106,13 @@ function formatTime() {
   });
 }
 
-export function MessagesManagement({ chatFocus, onChatFocusConsumed }) {
-  const [conversations, setConversations] = useState(INITIAL_CONVERSATIONS);
+export function MessagesManagement({
+  chatFocus,
+  onChatFocusConsumed,
+  conversations,
+  onConversationsChange,
+}) {
+  const setConversations = onConversationsChange;
   const [selectedConversation, setSelectedConversation] = useState(null);
   const [newMessage, setNewMessage] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
@@ -109,6 +120,7 @@ export function MessagesManagement({ chatFocus, onChatFocusConsumed }) {
   const messagesContainerRef = useRef(null);
   const messageInputRef = useRef(null);
   const pendingFocusRef = useRef(null);
+  const prefersReducedMotion = useReducedMotion();
 
   useEffect(() => {
     const el = messagesContainerRef.current;
@@ -264,8 +276,16 @@ export function MessagesManagement({ chatFocus, onChatFocusConsumed }) {
     selectedConversation?.productName && selectedConversation?.productImage
   );
 
+  const entrance = prefersReducedMotion
+    ? { initial: { opacity: 1 }, animate: { opacity: 1 } }
+    : { initial: { opacity: 0, y: 10 }, animate: { opacity: 1, y: 0 } };
+
   return (
-    <div className="lg:pt-0 pt-16 h-[calc(100vh)] flex flex-col">
+    <MotionDiv
+      className="lg:pt-0 pt-16 h-[calc(100vh)] flex flex-col"
+      {...entrance}
+      transition={{ duration: prefersReducedMotion ? 0 : 0.2 }}
+    >
       <div className="bg-white border-b border-gray-200 p-6">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
@@ -281,7 +301,7 @@ export function MessagesManagement({ chatFocus, onChatFocusConsumed }) {
             <button
               type="button"
               onClick={handleMarkAllRead}
-              className="text-sm text-gray-700 hover:text-gray-900 underline underline-offset-2 self-start"
+              className={`text-sm text-gray-700 hover:text-gray-900 underline underline-offset-2 self-start transition duration-200 ${focusRing}`}
             >
               Mark all as read
             </button>
@@ -303,7 +323,7 @@ export function MessagesManagement({ chatFocus, onChatFocusConsumed }) {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search by customer, product, or order..."
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-900"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md transition duration-200 focus:outline-none focus:ring-2 focus:ring-gray-900"
                 aria-label="Search conversations"
               />
             </div>
@@ -311,18 +331,20 @@ export function MessagesManagement({ chatFocus, onChatFocusConsumed }) {
               <button
                 type="button"
                 onClick={() => setInboxFilter('all')}
-                className={`px-3 py-1.5 text-sm border transition ${
+                aria-pressed={inboxFilter === 'all'}
+                className={`px-3 py-1.5 text-sm border rounded-md transition duration-200 ${focusRing} ${
                   inboxFilter === 'all'
                     ? 'bg-gray-900 text-white border-gray-900'
                     : 'bg-white text-gray-700 border-gray-300 hover:border-gray-400'
                 }`}
               >
-                All
+                All ({conversations.length})
               </button>
               <button
                 type="button"
                 onClick={() => setInboxFilter('unread')}
-                className={`px-3 py-1.5 text-sm border transition ${
+                aria-pressed={inboxFilter === 'unread'}
+                className={`px-3 py-1.5 text-sm border rounded-md transition duration-200 ${focusRing} ${
                   inboxFilter === 'unread'
                     ? 'bg-gray-900 text-white border-gray-900'
                     : 'bg-white text-gray-700 border-gray-300 hover:border-gray-400'
@@ -350,7 +372,7 @@ export function MessagesManagement({ chatFocus, onChatFocusConsumed }) {
                       setSearchQuery('');
                       setInboxFilter('all');
                     }}
-                    className="mt-3 text-sm text-gray-700 underline underline-offset-2"
+                    className={`mt-3 text-sm text-gray-700 underline underline-offset-2 transition duration-200 ${focusRing}`}
                   >
                     Clear filters
                   </button>
@@ -362,7 +384,7 @@ export function MessagesManagement({ chatFocus, onChatFocusConsumed }) {
                   key={conversation.id}
                   type="button"
                   onClick={() => handleSelectConversation(conversation)}
-                  className={`w-full p-4 border-b border-gray-200 hover:bg-gray-50 transition text-left ${
+                  className={`w-full p-4 border-b border-gray-200 hover:bg-gray-50 transition duration-200 text-left ${focusRing} ${
                     selectedConversation?.id === conversation.id
                       ? 'bg-gray-50 border-l-2 border-l-gray-900'
                       : 'border-l-2 border-l-transparent'
@@ -426,7 +448,7 @@ export function MessagesManagement({ chatFocus, onChatFocusConsumed }) {
                 <button
                   type="button"
                   onClick={handleBackToList}
-                  className="md:hidden p-2 -ml-2 text-gray-600 hover:text-gray-900 transition"
+                  className={`md:hidden p-2 -ml-2 text-gray-600 hover:text-gray-900 transition duration-200 ${focusRing}`}
                   aria-label="Back to conversations"
                 >
                   <ArrowLeft className="w-5 h-5" />
@@ -448,7 +470,7 @@ export function MessagesManagement({ chatFocus, onChatFocusConsumed }) {
 
               {hasProductContext ? (
                 <div className="px-4 pb-4">
-                  <div className="flex items-center gap-3 p-3 bg-gray-50 border border-gray-200">
+                  <div className="flex items-center gap-3 p-3 bg-gray-50 border border-gray-200 rounded-lg">
                     <img
                       src={selectedConversation.productImage}
                       alt=""
@@ -472,7 +494,7 @@ export function MessagesManagement({ chatFocus, onChatFocusConsumed }) {
                 </div>
               ) : selectedConversation.orderId ? (
                 <div className="px-4 pb-4">
-                  <div className="flex items-center gap-3 p-3 bg-gray-50 border border-gray-200">
+                  <div className="flex items-center gap-3 p-3 bg-gray-50 border border-gray-200 rounded-lg">
                     <Package className="w-5 h-5 text-gray-400 shrink-0" />
                     <div>
                       <p className="text-xs text-gray-500 mb-0.5">Regarding order</p>
@@ -497,7 +519,7 @@ export function MessagesManagement({ chatFocus, onChatFocusConsumed }) {
                   }`}
                 >
                   <div
-                    className={`max-w-[85%] sm:max-w-md px-4 py-2.5 ${
+                    className={`max-w-[85%] sm:max-w-md px-4 py-2.5 rounded-md ${
                       message.sender === 'admin'
                         ? 'bg-gray-900 text-white'
                         : 'bg-white border border-gray-200 text-gray-900'
@@ -532,14 +554,14 @@ export function MessagesManagement({ chatFocus, onChatFocusConsumed }) {
                   value={newMessage}
                   onChange={(e) => setNewMessage(e.target.value)}
                   placeholder={`Message ${selectedConversation.customerName.split(' ')[0]}…`}
-                  className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900"
+                  className="flex-1 px-4 py-2.5 border border-gray-300 rounded-md transition duration-200 focus:outline-none focus:ring-2 focus:ring-gray-900"
                   aria-label="Message text"
                   autoComplete="off"
                 />
                 <button
                   type="submit"
                   disabled={!newMessage.trim()}
-                  className="px-5 py-2.5 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                  className={`px-5 py-2.5 bg-gray-900 text-white rounded-md hover:bg-gray-800 transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 ${focusRing}`}
                 >
                   <Send className="w-5 h-5" />
                   <span className="hidden sm:inline">Send</span>
@@ -559,6 +581,6 @@ export function MessagesManagement({ chatFocus, onChatFocusConsumed }) {
           </div>
         )}
       </div>
-    </div>
+    </MotionDiv>
   );
 }

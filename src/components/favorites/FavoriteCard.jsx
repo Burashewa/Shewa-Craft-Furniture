@@ -7,7 +7,7 @@ export function FavoriteCard({
   onViewDetails,
 }) {
   return (
-    <article className="bg-white border border-gray-200 overflow-hidden flex flex-col">
+    <article className="bg-white border border-gray-200 rounded-lg overflow-hidden flex flex-col transition duration-200 motion-reduce:transition-none hover:-translate-y-0.5 hover:shadow-sm hover:border-gray-300 motion-reduce:hover:translate-y-0">
       <button
         type="button"
         onClick={() => onViewDetails(item)}
@@ -19,7 +19,7 @@ export function FavoriteCard({
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
         />
         {!item.inStock && (
-          <span className="absolute top-3 left-3 px-2.5 py-1 bg-gray-900/90 text-white text-xs">
+          <span className="absolute top-3 left-3 px-2.5 py-1 bg-gray-900/90 text-white text-xs rounded-sm">
             Out of stock
           </span>
         )}
@@ -36,7 +36,15 @@ export function FavoriteCard({
               {item.name}
             </h2>
           </button>
-          <Heart className="w-4 h-4 fill-gray-900 text-gray-900 shrink-0 mt-1" />
+          <button
+            type="button"
+            onClick={() => onRemove(item.productId)}
+            className="p-1 text-gray-900 hover:bg-gray-50 rounded-md transition duration-200 shrink-0"
+            aria-label={`Remove ${item.name} from favorites`}
+            title="Remove from favorites"
+          >
+            <Heart className="w-4 h-4 fill-gray-900 text-gray-900" />
+          </button>
         </div>
 
         <p className="text-xl text-gray-900 mb-4">
@@ -48,7 +56,7 @@ export function FavoriteCard({
             type="button"
             onClick={() => onAddToCart(item)}
             disabled={!item.inStock}
-            className="w-full px-4 py-3 bg-gray-900 text-white hover:bg-gray-800 transition disabled:bg-gray-300 disabled:cursor-not-allowed inline-flex items-center justify-center gap-2 text-sm"
+            className="w-full px-4 py-3 bg-gray-900 text-white rounded-md hover:bg-gray-800 transition disabled:bg-gray-300 disabled:cursor-not-allowed inline-flex items-center justify-center gap-2 text-sm"
           >
             <ShoppingCart className="w-4 h-4" />
             Add to cart
@@ -56,7 +64,7 @@ export function FavoriteCard({
           <button
             type="button"
             onClick={() => onRemove(item.productId)}
-            className="w-full px-4 py-2.5 border border-gray-300 text-gray-700 hover:bg-gray-50 transition inline-flex items-center justify-center gap-2 text-sm"
+            className="w-full px-4 py-2.5 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition inline-flex items-center justify-center gap-2 text-sm"
           >
             <Trash2 className="w-4 h-4" />
             Remove

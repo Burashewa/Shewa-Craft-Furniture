@@ -22,9 +22,9 @@ export function OrderCard({ order, product, onViewDetails }) {
   const rated = hasOrderRating(order);
 
   return (
-    <article className="bg-white border border-gray-200 p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6">
+    <article className="bg-white border border-gray-200 rounded-lg p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6 transition duration-200 motion-reduce:transition-none hover:-translate-y-0.5 hover:shadow-sm hover:border-gray-300 motion-reduce:hover:translate-y-0">
       <div className="flex items-start sm:items-center gap-4 flex-1 min-w-0">
-        <div className="w-20 h-20 sm:w-24 sm:h-24 shrink-0 overflow-hidden bg-gray-100">
+        <div className="w-20 h-20 sm:w-24 sm:h-24 shrink-0 overflow-hidden bg-gray-100 rounded-md">
           <img src={image} alt={name} className="w-full h-full object-cover" />
         </div>
         <div className="min-w-0">
@@ -34,7 +34,7 @@ export function OrderCard({ order, product, onViewDetails }) {
           </p>
           <div className="flex flex-wrap items-center gap-2 mt-2">
             <span
-              className={`inline-flex px-2.5 py-0.5 text-xs border ${getStatusClasses(order.status)}`}
+              className={`inline-flex px-2.5 py-0.5 text-xs border rounded-sm ${getStatusClasses(order.status)}`}
             >
               {formatOrderStatus(order.status)}
             </span>
@@ -63,7 +63,7 @@ export function OrderCard({ order, product, onViewDetails }) {
           <button
             type="button"
             onClick={() => onViewDetails(order)}
-            className="inline-flex items-center px-4 py-2.5 bg-gray-900 text-white text-sm hover:bg-gray-800 transition"
+            className="inline-flex items-center px-4 py-2.5 bg-gray-900 text-white rounded-md text-sm hover:bg-gray-800 transition duration-200"
           >
             Confirm receipt
           </button>
@@ -72,7 +72,7 @@ export function OrderCard({ order, product, onViewDetails }) {
           <button
             type="button"
             onClick={() => onViewDetails(order)}
-            className="inline-flex items-center px-4 py-2.5 bg-gray-900 text-white text-sm hover:bg-gray-800 transition"
+            className="inline-flex items-center px-4 py-2.5 bg-gray-900 text-white rounded-md text-sm hover:bg-gray-800 transition duration-200"
           >
             Rate product
           </button>
@@ -80,7 +80,7 @@ export function OrderCard({ order, product, onViewDetails }) {
         <button
           type="button"
           onClick={() => onViewDetails(order)}
-          className="inline-flex items-center gap-2 px-4 py-2.5 border border-gray-300 text-sm text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition"
+          className="inline-flex items-center gap-2 px-4 py-2.5 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition duration-200"
           aria-label={`View details for order ${order.id}`}
         >
           <Eye className="w-4 h-4" />

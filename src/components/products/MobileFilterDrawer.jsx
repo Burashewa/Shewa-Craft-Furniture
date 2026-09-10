@@ -14,6 +14,7 @@ export function MobileFilterDrawer({
   priceRange,
   onPriceRangeChange,
   onReset,
+  resetDisabled = false,
 }) {
   useEffect(() => {
     if (!open) return undefined;
@@ -61,7 +62,7 @@ export function MobileFilterDrawer({
           <button
             type="button"
             onClick={onClose}
-            className={`p-2 text-gray-600 hover:text-gray-900 transition ${focusRing}`}
+            className={`p-2 rounded-md text-gray-600 hover:text-gray-900 transition ${focusRing}`}
             aria-label="Close filters"
           >
             <X className="w-5 h-5" aria-hidden />
@@ -70,11 +71,13 @@ export function MobileFilterDrawer({
 
         <div className="flex-1 overflow-y-auto p-5">
           <FilterPanel
+            namePrefix="mobile"
             selectedCategory={selectedCategory}
             onCategoryChange={onCategoryChange}
             priceRange={priceRange}
             onPriceRangeChange={onPriceRangeChange}
             onReset={onReset}
+            resetDisabled={resetDisabled}
           />
         </div>
 
@@ -82,7 +85,7 @@ export function MobileFilterDrawer({
           <button
             type="button"
             onClick={onClose}
-            className={`w-full py-3 bg-gray-900 text-white hover:bg-gray-800 transition ${focusRing}`}
+            className={`w-full py-3 bg-gray-900 text-white rounded-md hover:bg-gray-800 transition ${focusRing}`}
           >
             Show results
           </button>

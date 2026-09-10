@@ -5,7 +5,7 @@ const focusRing =
   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2';
 
 const fieldClass =
-  'border border-gray-300 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-900';
+  'border border-gray-300 rounded-md bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-900';
 
 export function CatalogToolbar({
   searchQuery,
@@ -54,14 +54,14 @@ export function CatalogToolbar({
             ref={filtersButtonRef}
             type="button"
             onClick={onOpenFilters}
-            className={`lg:hidden min-h-11 px-4 py-2.5 border border-gray-300 bg-white text-gray-700 flex items-center gap-2 hover:bg-gray-50 transition ${focusRing}`}
+            className={`lg:hidden min-h-11 px-4 py-2.5 border border-gray-300 rounded-md bg-white text-gray-700 flex items-center gap-2 hover:bg-gray-50 transition ${focusRing}`}
             aria-expanded={filtersOpen}
             aria-controls="mobile-filters-dialog"
           >
             <SlidersHorizontal className="w-5 h-5" aria-hidden />
             Filters
             {activeFilterCount > 0 && (
-              <span className="ml-1 inline-flex items-center justify-center min-w-5 h-5 px-1 bg-gray-900 text-white text-xs">
+              <span className="ml-1 inline-flex items-center justify-center min-w-5 h-5 px-1 bg-gray-900 text-white text-xs rounded-sm">
                 {activeFilterCount}
               </span>
             )}
@@ -72,7 +72,7 @@ export function CatalogToolbar({
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <p className="text-sm text-gray-500">
           <span className="text-gray-900 font-medium">{resultsCount}</span>{' '}
-          {resultsCount === 1 ? 'product' : 'products'}
+          {resultsCount === 1 ? 'product found' : 'products found'}
         </p>
 
         <div className="sm:hidden">

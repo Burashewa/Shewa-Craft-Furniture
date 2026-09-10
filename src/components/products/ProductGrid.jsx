@@ -7,7 +7,7 @@ const focusRing =
 export function ProductGrid({ products, onProductClick, onClearFilters }) {
   if (products.length === 0) {
     return (
-      <div className="p-12 text-center border border-gray-200 bg-white">
+      <div className="p-12 text-center border border-gray-200 bg-white rounded-lg">
         <Package className="w-12 h-12 text-gray-300 mx-auto mb-3" aria-hidden />
         <p className="text-gray-900 font-medium">No products found</p>
         <p className="text-sm text-gray-500 mt-1 max-w-sm mx-auto">
@@ -18,7 +18,7 @@ export function ProductGrid({ products, onProductClick, onClearFilters }) {
           <button
             type="button"
             onClick={onClearFilters}
-            className={`mt-4 inline-flex items-center px-4 py-2 bg-gray-900 text-white hover:bg-gray-800 transition ${focusRing}`}
+            className={`mt-4 inline-flex items-center px-4 py-2 bg-gray-900 text-white rounded-md hover:bg-gray-800 transition ${focusRing}`}
           >
             Clear filters
           </button>

@@ -10,7 +10,7 @@ export function OrderSummary({
   onCheckout,
 }) {
   return (
-    <aside className="border border-gray-200 bg-white p-5 sm:p-6 sticky top-24">
+    <aside className="border border-gray-200 bg-white rounded-lg p-5 sm:p-6 sticky top-24">
       <h2 className="text-sm font-medium uppercase tracking-wider text-gray-500 mb-6">
         Order summary
       </h2>
@@ -41,13 +41,13 @@ export function OrderSummary({
         type="button"
         disabled={itemCount === 0}
         onClick={onCheckout}
-        className="w-full px-6 py-4 bg-gray-900 text-white hover:bg-gray-800 transition disabled:bg-gray-300 disabled:cursor-not-allowed inline-flex items-center justify-center gap-2 mb-4"
+        className="w-full px-6 py-4 bg-gray-900 text-white rounded-md hover:bg-gray-800 transition disabled:bg-gray-300 disabled:cursor-not-allowed inline-flex items-center justify-center gap-2 mb-4"
       >
         <Lock className="w-5 h-5" />
         Proceed to checkout
       </button>
 
-      <div className="flex items-start gap-2 p-3 bg-gray-50 border border-gray-100 mb-4">
+      <div className="flex items-start gap-2 p-3 bg-gray-50 border border-gray-100 rounded-lg mb-4">
         <Lock className="w-4 h-4 text-gray-600 mt-0.5 shrink-0" />
         <p className="text-xs text-gray-600">
           Secure checkout — your payment information is protected.

@@ -1,12 +1,31 @@
 import { Trash2, Plus, Minus, Heart, MessageCircle } from 'lucide-react';
 
-export function CartItem({ item, onUpdateQuantity, onRemove, onSaveForLater, onChat }) {
+const focusRing =
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2';
+
+export function CartItem({
+  item,
+  onUpdateQuantity,
+  onRemove,
+  onSaveForLater,
+  onChat,
+  onViewProduct,
+}) {
   return (
-    <article className="bg-white border border-gray-200 p-4 sm:p-5">
+    <article className="bg-white border border-gray-200 rounded-lg p-4 sm:p-5 transition duration-200 motion-reduce:transition-none hover:-translate-y-0.5 hover:shadow-sm hover:border-gray-300 motion-reduce:hover:translate-y-0">
       <div className="flex gap-4">
-        <div className="w-24 h-24 sm:w-32 sm:h-32 shrink-0 bg-gray-100 overflow-hidden">
-          <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
-        </div>
+        <button
+          type="button"
+          onClick={() => onViewProduct(item)}
+          className={`w-24 h-24 sm:w-32 sm:h-32 shrink-0 bg-gray-100 overflow-hidden rounded-md cursor-pointer group ${focusRing}`}
+          aria-label={`View details for ${item.name}`}
+        >
+          <img
+            src={item.image}
+            alt=""
+            className="w-full h-full object-cover transition duration-200 group-hover:scale-[1.03] group-hover:brightness-95 motion-reduce:transition-none motion-reduce:group-hover:scale-100 motion-reduce:group-hover:brightness-100"
+          />
+        </button>
 
         <div className="flex-1 min-w-0">
           <div className="flex justify-between items-start gap-3 mb-2">
@@ -22,7 +41,7 @@ export function CartItem({ item, onUpdateQuantity, onRemove, onSaveForLater, onC
             <button
               type="button"
               onClick={() => onRemove(item.id)}
-              className="p-2 text-gray-400 hover:text-gray-900 transition"
+              className={`p-2 text-gray-400 hover:text-gray-900 transition duration-200 ${focusRing}`}
               aria-label={`Remove ${item.name}`}
             >
               <Trash2 className="w-5 h-5" />
@@ -34,7 +53,8 @@ export function CartItem({ item, onUpdateQuantity, onRemove, onSaveForLater, onC
               <button
                 type="button"
                 onClick={() => onUpdateQuantity(item.id, item.quantity - 1)}
-                className="w-9 h-9 border border-gray-300 flex items-center justify-center hover:bg-gray-50 transition"
+                disabled={item.quantity <= 1}
+                className={`w-9 h-9 border border-gray-300 rounded-md flex items-center justify-center hover:bg-gray-50 transition duration-200 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white ${focusRing}`}
                 aria-label="Decrease quantity"
               >
                 <Minus className="w-4 h-4" />
@@ -43,7 +63,7 @@ export function CartItem({ item, onUpdateQuantity, onRemove, onSaveForLater, onC
               <button
                 type="button"
                 onClick={() => onUpdateQuantity(item.id, item.quantity + 1)}
-                className="w-9 h-9 border border-gray-300 flex items-center justify-center hover:bg-gray-50 transition"
+                className={`w-9 h-9 border border-gray-300 rounded-md flex items-center justify-center hover:bg-gray-50 transition duration-200 ${focusRing}`}
                 aria-label="Increase quantity"
               >
                 <Plus className="w-4 h-4" />
@@ -54,7 +74,7 @@ export function CartItem({ item, onUpdateQuantity, onRemove, onSaveForLater, onC
               <button
                 type="button"
                 onClick={() => onSaveForLater(item)}
-                className="text-sm text-gray-600 hover:text-gray-900 transition inline-flex items-center gap-1.5"
+                className={`text-sm text-gray-600 hover:text-gray-900 transition inline-flex items-center gap-1.5 ${focusRing}`}
               >
                 <Heart className="w-4 h-4" />
                 Save for later
@@ -65,18 +85,16 @@ export function CartItem({ item, onUpdateQuantity, onRemove, onSaveForLater, onC
             </div>
           </div>
 
-          {item.owner && (
-            <div className="mt-4 pt-4 border-t border-gray-100">
-              <button
-                type="button"
-                onClick={() => onChat(item)}
-                className="inline-flex items-center gap-2 text-sm text-gray-700 hover:text-gray-900 transition"
-              >
-                <MessageCircle className="w-4 h-4" />
-                Chat with {item.owner.name}
-              </button>
-            </div>
-          )}
+          <div className="mt-4 pt-4 border-t border-gray-100">
+            <button
+              type="button"
+              onClick={() => onChat(item)}
+              className={`inline-flex items-center gap-2 text-sm text-gray-700 hover:text-gray-900 transition ${focusRing}`}
+            >
+              <MessageCircle className="w-4 h-4" />
+              Chat with ShewaCraft Support
+            </button>
+          </div>
         </div>
       </div>
     </article>

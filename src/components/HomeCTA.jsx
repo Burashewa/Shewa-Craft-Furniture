@@ -12,10 +12,13 @@ export function HomeCTA() {
         </p>
         <Link
           to="/products"
-          className="inline-flex items-center gap-2 px-8 py-4 bg-white text-gray-900 hover:bg-gray-100 transition"
+          className="group inline-flex items-center gap-2 px-8 py-4 bg-white text-gray-900 rounded-md hover:bg-gray-100 hover:-translate-y-0.5 transition duration-200 motion-reduce:transform-none"
         >
           Explore Collection
-          <ArrowRight className="w-5 h-5" />
+          <ArrowRight
+            className="w-5 h-5 transition duration-200 group-hover:translate-x-0.5 motion-reduce:group-hover:translate-x-0"
+            aria-hidden
+          />
         </Link>
       </div>
     </section>

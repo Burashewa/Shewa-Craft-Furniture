@@ -48,7 +48,7 @@ export function ActiveFilterChips({
           type="button"
           onClick={chip.onClear}
           aria-label={`Remove ${chip.label} filter`}
-          className={`inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 text-sm text-gray-800 hover:bg-gray-200 transition ${focusRing}`}
+          className={`inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 rounded-sm text-sm text-gray-800 hover:bg-gray-200 transition ${focusRing}`}
         >
           {chip.label}
           <X className="w-3.5 h-3.5" aria-hidden />

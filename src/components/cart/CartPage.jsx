@@ -1,14 +1,47 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { ShoppingBag, Truck } from 'lucide-react';
 import { ChatBox } from '../ChatBox';
 import { CheckoutModal } from '../CheckoutModal';
+import { ProductDetailView } from '../ProductDetailView';
+import { ConfirmDialog } from '../ui/ConfirmDialog';
 import { initialSavedItems, FREE_SHIPPING_THRESHOLD, calcCartTotals } from '../../data/cart';
+import { products } from '../../data/products';
 import { useShop } from '../../context/ShopContext';
+import { useToast } from '../../context/ToastContext';
 import { CartHeader } from './CartHeader';
 import { CartItem } from './CartItem';
 import { SavedItem } from './SavedItem';
 import { OrderSummary } from './OrderSummary';
+
+const MotionDiv = motion.div;
+
+const SUPPORT_OWNER = {
+  name: 'ShewaCraft Support',
+  avatar:
+    'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop',
+  responseTime: 'Within 3 hours',
+};
+
+function resolveCartProduct(item) {
+  return (
+    products.find((product) => product.id === item.productId) || {
+      id: item.productId,
+      name: item.name,
+      price: item.price,
+      description: '',
+      category: '',
+      images: [item.image],
+      inStock: item.inStock,
+      rating: 0,
+      reviews: 0,
+      colors: item.color ? [item.color] : [],
+      specifications: [],
+      owner: item.owner || SUPPORT_OWNER,
+    }
+  );
+}
 
 export function CartPage() {
   const {
@@ -18,9 +51,13 @@ export function CartPage() {
     removeFromCart,
     cartCount,
   } = useShop();
+  const { showToast } = useToast();
   const [savedItems, setSavedItems] = useState(initialSavedItems);
   const [chatItem, setChatItem] = useState(null);
+  const [selectedProduct, setSelectedProduct] = useState(null);
   const [showCheckout, setShowCheckout] = useState(false);
+  const [pendingRemove, setPendingRemove] = useState(null);
+  const prefersReducedMotion = useReducedMotion();
 
   const saveForLater = (item) => {
     setSavedItems((items) => [
@@ -35,6 +72,11 @@ export function CartPage() {
       },
     ]);
     removeFromCart(item.id);
+    showToast({
+      type: 'success',
+      title: 'Saved for later',
+      message: `${item.name} was moved to Saved for later.`,
+    });
   };
 
   const moveToCart = (savedItem) => {
@@ -48,12 +90,7 @@ export function CartPage() {
         price: savedItem.price,
         quantity: 1,
         inStock: savedItem.inStock,
-        owner: {
-          name: 'ShewaCraft Support',
-          avatar:
-            'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop',
-          responseTime: 'Within 3 hours',
-        },
+        owner: SUPPORT_OWNER,
       },
     ]);
     setSavedItems((items) => items.filter((item) => item.id !== savedItem.id));
@@ -83,7 +120,7 @@ export function CartPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-4">
             {cartItems.length === 0 ? (
-              <div className="text-center py-20 px-4 border border-dashed border-gray-200 bg-white">
+              <div className="text-center py-20 px-4 border border-dashed border-gray-200 bg-white rounded-lg">
                 <ShoppingBag className="w-10 h-10 text-gray-400 mx-auto mb-4" />
                 <h2 className="text-xl text-gray-900 mb-2">Your cart is empty</h2>
                 <p className="text-gray-600 mb-6 max-w-md mx-auto">
@@ -91,15 +128,15 @@ export function CartPage() {
                 </p>
                 <Link
                   to="/products"
-                  className="inline-flex px-6 py-3 bg-gray-900 text-white hover:bg-gray-800 transition"
+                  className="inline-flex px-6 py-3 bg-gray-900 text-white rounded-md hover:bg-gray-800 transition"
                 >
-                  Start shopping
+                  Continue Shopping
                 </Link>
               </div>
             ) : (
               <>
                 {subtotal > 0 && subtotal < FREE_SHIPPING_THRESHOLD && (
-                  <div className="border border-gray-200 bg-white p-4 flex items-start gap-3">
+                  <div className="border border-gray-200 bg-white rounded-lg p-4 flex items-start gap-3">
                     <Truck className="w-5 h-5 text-gray-700 shrink-0 mt-0.5" />
                     <p className="text-sm text-gray-700">
                       Add{' '}
@@ -112,16 +149,31 @@ export function CartPage() {
                 )}
 
                 <div className="space-y-4">
-                  {cartItems.map((item) => (
-                    <CartItem
-                      key={item.id}
-                      item={item}
-                      onUpdateQuantity={updateQuantity}
-                      onRemove={removeFromCart}
-                      onSaveForLater={saveForLater}
-                      onChat={setChatItem}
-                    />
-                  ))}
+                  <AnimatePresence initial={false}>
+                    {cartItems.map((item) => (
+                      <MotionDiv
+                        key={item.id}
+                        layout={!prefersReducedMotion}
+                        initial={prefersReducedMotion ? false : { opacity: 1, y: 0 }}
+                        exit={
+                          prefersReducedMotion
+                            ? { opacity: 0 }
+                            : { opacity: 0, y: -8, transition: { duration: 0.2 } }
+                        }
+                      >
+                        <CartItem
+                          item={item}
+                          onUpdateQuantity={updateQuantity}
+                          onRemove={() => setPendingRemove(item)}
+                          onSaveForLater={saveForLater}
+                          onChat={setChatItem}
+                          onViewProduct={(cartItem) =>
+                            setSelectedProduct(resolveCartProduct(cartItem))
+                          }
+                        />
+                      </MotionDiv>
+                    ))}
+                  </AnimatePresence>
                 </div>
               </>
             )}
@@ -165,9 +217,17 @@ export function CartPage() {
             name: chatItem.name,
             price: chatItem.price,
             images: [chatItem.image],
-            owner: chatItem.owner,
+            owner: chatItem.owner || SUPPORT_OWNER,
           }}
           onClose={() => setChatItem(null)}
+        />
+      )}
+
+      {selectedProduct && (
+        <ProductDetailView
+          product={selectedProduct}
+          showAddToCart={false}
+          onClose={() => setSelectedProduct(null)}
         />
       )}
 
@@ -178,6 +238,22 @@ export function CartPage() {
           onClose={() => setShowCheckout(false)}
         />
       )}
+
+      <ConfirmDialog
+        open={Boolean(pendingRemove)}
+        title="Remove from cart?"
+        message={
+          pendingRemove
+            ? `${pendingRemove.name} will be removed from your cart.`
+            : ''
+        }
+        confirmLabel="Remove"
+        onCancel={() => setPendingRemove(null)}
+        onConfirm={() => {
+          if (pendingRemove) removeFromCart(pendingRemove.id);
+          setPendingRemove(null);
+        }}
+      />
     </div>
   );
 }

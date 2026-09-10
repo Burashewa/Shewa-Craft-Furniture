@@ -1,4 +1,5 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { motion, useReducedMotion } from 'framer-motion';
 import {
   Plus,
   Search,
@@ -11,8 +12,14 @@ import {
   Star,
   Filter,
 } from 'lucide-react';
-import { products as initialProducts } from '../../data/products';
 import { useToast } from '../../context/ToastContext';
+import { ConfirmDialog } from '../ui/ConfirmDialog';
+import { ProductStatCard } from './dashboard/ProductStatCard';
+
+const MotionDiv = motion.div;
+
+const focusRing =
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2';
 
 const CATEGORIES = ['Living Room', 'Bedroom', 'Dining', 'Office', 'Outdoor'];
 
@@ -69,7 +76,7 @@ function upsertSpec(specs = [], label, value) {
   return next;
 }
 
-function normalizeProduct(product) {
+export function normalizeProduct(product) {
   return {
     ...product,
     featured: Boolean(product.featured),
@@ -91,14 +98,16 @@ function normalizeProduct(product) {
   };
 }
 
-export function ProductsManagement() {
+export function ProductsManagement({
+  products,
+  onProductsChange,
+  initialStock = 'all',
+}) {
   const { showToast } = useToast();
-  const [products, setProducts] = useState(() =>
-    initialProducts.map(normalizeProduct)
-  );
+  const setProducts = onProductsChange;
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
-  const [stockFilter, setStockFilter] = useState('all');
+  const [stockFilter, setStockFilter] = useState(initialStock || 'all');
   const [featuredFilter, setFeaturedFilter] = useState('all');
   const [sortBy, setSortBy] = useState('name-asc');
   const [showFormModal, setShowFormModal] = useState(false);
@@ -107,6 +116,12 @@ export function ProductsManagement() {
   const [detailImageIndex, setDetailImageIndex] = useState(0);
   const [colorInput, setColorInput] = useState('');
   const [formData, setFormData] = useState(EMPTY_FORM);
+  const [pendingDelete, setPendingDelete] = useState(null);
+  const prefersReducedMotion = useReducedMotion();
+
+  useEffect(() => {
+    setStockFilter(initialStock || 'all');
+  }, [initialStock]);
 
   const stats = useMemo(() => {
     const total = products.length;
@@ -201,7 +216,7 @@ export function ProductsManagement() {
       }));
     } catch {
       showToast({
-        type: 'success',
+        type: 'error',
         title: 'Upload failed',
         message: 'One or more photos could not be read. Please try again.',
       });
@@ -292,7 +307,7 @@ export function ProductsManagement() {
     const productImages = formData.images || [];
     if (productImages.length === 0) {
       showToast({
-        type: 'success',
+        type: 'error',
         title: 'Photos required',
         message: 'Upload at least one product photo before saving.',
       });
@@ -301,7 +316,7 @@ export function ProductsManagement() {
 
     if (!formData.name?.trim()) {
       showToast({
-        type: 'success',
+        type: 'error',
         title: 'Name required',
         message: 'Please enter a product name.',
       });
@@ -311,7 +326,7 @@ export function ProductsManagement() {
     const price = Number(formData.price);
     if (!Number.isFinite(price) || price < 0) {
       showToast({
-        type: 'success',
+        type: 'error',
         title: 'Invalid price',
         message: 'Enter a valid product price.',
       });
@@ -366,21 +381,20 @@ export function ProductsManagement() {
 
   const handleDelete = (id) => {
     const product = products.find((p) => p.id === id);
-    if (
-      !window.confirm(
-        `Delete “${product?.name || 'this product'}”? This cannot be undone.`
-      )
-    ) {
-      return;
-    }
+    setPendingDelete(product || { id, name: 'this product' });
+  };
 
+  const confirmDelete = () => {
+    if (!pendingDelete) return;
+    const id = pendingDelete.id;
     setProducts((prev) => prev.filter((p) => p.id !== id));
     if (viewingProduct?.id === id) setViewingProduct(null);
     showToast({
       type: 'success',
       title: 'Product deleted',
-      message: `${product?.name || 'Product'} was removed from inventory.`,
+      message: `${pendingDelete.name || 'Product'} was removed from inventory.`,
     });
+    setPendingDelete(null);
   };
 
   const handleQuickStockToggle = (product) => {
@@ -424,8 +438,21 @@ export function ProductsManagement() {
     };
   };
 
+  const applyTotalFilter = () => {
+    setStockFilter('all');
+    setFeaturedFilter('all');
+  };
+
+  const entrance = prefersReducedMotion
+    ? { initial: { opacity: 1 }, animate: { opacity: 1 } }
+    : { initial: { opacity: 0, y: 10 }, animate: { opacity: 1, y: 0 } };
+
   return (
-    <div className="lg:pt-0 pt-16">
+    <MotionDiv
+      className="lg:pt-0 pt-16"
+      {...entrance}
+      transition={{ duration: prefersReducedMotion ? 0 : 0.2 }}
+    >
       <div className="bg-white border-b border-gray-200 p-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
@@ -437,7 +464,7 @@ export function ProductsManagement() {
           <button
             type="button"
             onClick={handleOpenAddModal}
-            className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-gray-900 text-white hover:bg-gray-800 transition"
+            className={`inline-flex items-center justify-center gap-2 px-4 py-2 bg-gray-900 text-white rounded-md hover:bg-gray-800 transition duration-200 ${focusRing}`}
           >
             <Plus className="w-5 h-5" />
             Add product
@@ -447,38 +474,43 @@ export function ProductsManagement() {
 
       <div className="p-6 space-y-6">
         <section className="grid grid-cols-2 lg:grid-cols-5 gap-4">
-          <div className="bg-white border border-gray-200 p-4">
-            <p className="text-xs text-gray-500 mb-1">Total products</p>
-            <p className="text-2xl text-gray-900">{stats.total}</p>
-          </div>
-          <div className="bg-white border border-gray-200 p-4">
-            <div className="flex items-center gap-2 text-xs text-gray-500 mb-1">
-              <Package className="w-3.5 h-3.5" />
-              In stock
-            </div>
-            <p className="text-2xl text-gray-900">{stats.inStock}</p>
-          </div>
-          <div className="bg-white border border-gray-200 p-4">
-            <div className="flex items-center gap-2 text-xs text-gray-500 mb-1">
-              <PackageX className="w-3.5 h-3.5" />
-              Out of stock
-            </div>
-            <p className="text-2xl text-gray-900">{stats.outOfStock}</p>
-          </div>
-          <div className="bg-white border border-gray-200 p-4">
-            <p className="text-xs text-gray-500 mb-1">Low stock (≤5)</p>
-            <p className="text-2xl text-gray-900">{stats.lowStock}</p>
-          </div>
-          <div className="bg-white border border-gray-200 p-4 col-span-2 lg:col-span-1">
-            <div className="flex items-center gap-2 text-xs text-gray-500 mb-1">
-              <Star className="w-3.5 h-3.5" />
-              Featured
-            </div>
-            <p className="text-2xl text-gray-900">{stats.featured}</p>
-          </div>
+          <ProductStatCard
+            label="Total products"
+            value={stats.total}
+            active={stockFilter === 'all' && featuredFilter === 'all'}
+            onClick={applyTotalFilter}
+          />
+          <ProductStatCard
+            label="In stock"
+            value={stats.inStock}
+            icon={Package}
+            active={stockFilter === 'in'}
+            onClick={() => setStockFilter('in')}
+          />
+          <ProductStatCard
+            label="Out of stock"
+            value={stats.outOfStock}
+            icon={PackageX}
+            active={stockFilter === 'out'}
+            onClick={() => setStockFilter('out')}
+          />
+          <ProductStatCard
+            label="Low stock (≤5)"
+            value={stats.lowStock}
+            active={stockFilter === 'low'}
+            onClick={() => setStockFilter('low')}
+          />
+          <ProductStatCard
+            label="Featured"
+            value={stats.featured}
+            icon={Star}
+            active={featuredFilter === 'yes'}
+            className="col-span-2 lg:col-span-1"
+            onClick={() => setFeaturedFilter('yes')}
+          />
         </section>
 
-        <section className="bg-white border border-gray-200 p-4 md:p-5">
+        <section className="bg-white border border-gray-200 rounded-lg p-4 md:p-5">
           <div className="flex items-center gap-2 text-sm text-gray-700 mb-3">
             <Filter className="w-4 h-4" />
             Search & filters
@@ -491,14 +523,14 @@ export function ProductsManagement() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search by name, category, or material..."
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-900"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md transition duration-200 focus:outline-none focus:ring-2 focus:ring-gray-900"
                 aria-label="Search products"
               />
             </div>
             <select
               value={categoryFilter}
               onChange={(e) => setCategoryFilter(e.target.value)}
-              className="px-3 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-900"
+              className="px-3 py-2 border border-gray-300 rounded-md transition duration-200 focus:outline-none focus:ring-2 focus:ring-gray-900"
               aria-label="Filter by category"
             >
               <option value="all">All categories</option>
@@ -511,7 +543,7 @@ export function ProductsManagement() {
             <select
               value={stockFilter}
               onChange={(e) => setStockFilter(e.target.value)}
-              className="px-3 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-900"
+              className="px-3 py-2 border border-gray-300 rounded-md transition duration-200 focus:outline-none focus:ring-2 focus:ring-gray-900"
               aria-label="Filter by stock"
             >
               <option value="all">All stock</option>
@@ -522,7 +554,7 @@ export function ProductsManagement() {
             <select
               value={featuredFilter}
               onChange={(e) => setFeaturedFilter(e.target.value)}
-              className="px-3 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-900"
+              className="px-3 py-2 border border-gray-300 rounded-md transition duration-200 focus:outline-none focus:ring-2 focus:ring-gray-900"
               aria-label="Filter by featured"
             >
               <option value="all">Featured: all</option>
@@ -541,7 +573,7 @@ export function ProductsManagement() {
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              className="px-3 py-2 border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
+              className="px-3 py-2 border border-gray-300 rounded-md text-sm transition duration-200 focus:outline-none focus:ring-2 focus:ring-gray-900"
               aria-label="Sort products"
             >
               <option value="name-asc">Sort: Name A–Z</option>
@@ -553,7 +585,7 @@ export function ProductsManagement() {
           </div>
         </section>
 
-        <section className="bg-white border border-gray-200 overflow-hidden">
+        <section className="bg-white border border-gray-200 rounded-lg overflow-hidden">
           {filteredProducts.length === 0 ? (
             <div className="p-12 text-center">
               <Package className="w-12 h-12 text-gray-300 mx-auto mb-3" />
@@ -564,7 +596,7 @@ export function ProductsManagement() {
               <button
                 type="button"
                 onClick={handleOpenAddModal}
-                className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-gray-900 text-white hover:bg-gray-800 transition"
+                className={`mt-4 inline-flex items-center gap-2 px-4 py-2 bg-gray-900 text-white rounded-md hover:bg-gray-800 transition duration-200 ${focusRing}`}
               >
                 <Plus className="w-4 h-4" />
                 Add product
@@ -606,7 +638,7 @@ export function ProductsManagement() {
                             <img
                               src={product.images[0]}
                               alt=""
-                              className="w-12 h-12 object-cover border border-gray-200 shrink-0"
+                              className="w-12 h-12 object-cover border border-gray-200 rounded-md shrink-0"
                             />
                             <div className="min-w-0">
                               <p className="text-sm font-medium text-gray-900 truncate">
@@ -619,7 +651,7 @@ export function ProductsManagement() {
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <span className="inline-block px-2 py-1 text-xs border border-gray-200 bg-gray-50 text-gray-800">
+                          <span className="inline-block px-2 py-1 text-xs border border-gray-200 rounded-sm bg-gray-50 text-gray-800">
                             {product.category}
                           </span>
                         </td>
@@ -631,7 +663,7 @@ export function ProductsManagement() {
                             type="button"
                             onClick={() => handleQuickStockToggle(product)}
                             title="Toggle stock status"
-                            className={`inline-block px-2 py-1 text-xs border ${badge.className}`}
+                            className={`inline-block px-2 py-1 text-xs border rounded-sm transition duration-200 ${focusRing} ${badge.className}`}
                           >
                             {badge.label}
                           </button>
@@ -651,7 +683,7 @@ export function ProductsManagement() {
                             <button
                               type="button"
                               onClick={() => handleViewProduct(product)}
-                              className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition"
+                              className={`p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition duration-200 ${focusRing}`}
                               aria-label={`View ${product.name}`}
                             >
                               <Eye className="w-4 h-4" />
@@ -659,7 +691,7 @@ export function ProductsManagement() {
                             <button
                               type="button"
                               onClick={() => handleOpenEditModal(product)}
-                              className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition"
+                              className={`p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition duration-200 ${focusRing}`}
                               aria-label={`Edit ${product.name}`}
                             >
                               <Edit className="w-4 h-4" />
@@ -667,7 +699,7 @@ export function ProductsManagement() {
                             <button
                               type="button"
                               onClick={() => handleDelete(product.id)}
-                              className="p-2 text-rose-600 hover:text-rose-800 hover:bg-rose-50 transition"
+                              className={`p-2 text-rose-600 hover:text-rose-800 hover:bg-rose-50 transition duration-200 ${focusRing}`}
                               aria-label={`Delete ${product.name}`}
                             >
                               <Trash2 className="w-4 h-4" />
@@ -686,7 +718,7 @@ export function ProductsManagement() {
 
       {showFormModal && (
         <div className="fixed inset-0 z-50 bg-black/50 flex items-start md:items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white max-w-2xl w-full my-8 max-h-[92vh] overflow-y-auto border border-gray-200">
+          <div className="bg-white max-w-2xl w-full my-8 max-h-[92vh] overflow-y-auto border border-gray-200 rounded-xl">
             <div className="p-6 border-b border-gray-200 flex items-center justify-between sticky top-0 bg-white z-10">
               <div>
                 <h2 className="text-2xl text-gray-900">
@@ -713,7 +745,7 @@ export function ProductsManagement() {
                     onChange={(e) =>
                       setFormData({ ...formData, name: e.target.value })
                     }
-                    className="w-full px-3 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-900"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900"
                     required
                   />
                 </div>
@@ -730,7 +762,7 @@ export function ProductsManagement() {
                     onChange={(e) =>
                       setFormData({ ...formData, price: e.target.value })
                     }
-                    className="w-full px-3 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-900"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900"
                     required
                   />
                 </div>
@@ -744,7 +776,7 @@ export function ProductsManagement() {
                     onChange={(e) =>
                       setFormData({ ...formData, category: e.target.value })
                     }
-                    className="w-full px-3 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-900"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900"
                     required
                   >
                     {CATEGORIES.map((category) => (
@@ -763,7 +795,7 @@ export function ProductsManagement() {
                       setFormData({ ...formData, description: e.target.value })
                     }
                     rows={3}
-                    className="w-full px-3 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-900"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900"
                     required
                   />
                 </div>
@@ -778,7 +810,7 @@ export function ProductsManagement() {
                       accept="image/*"
                       multiple
                       onChange={handleImagesChange}
-                      className="w-full px-3 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-900"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900"
                     />
                     <p className="text-xs text-gray-500">
                       Upload one or more photos. The first image is the main thumbnail.
@@ -789,7 +821,7 @@ export function ProductsManagement() {
                         {formData.images.map((image, index) => (
                           <div
                             key={`${index}-${String(image).slice(0, 24)}`}
-                            className="relative group border border-gray-200 overflow-hidden bg-gray-50"
+                            className="relative group border border-gray-200 rounded-md overflow-hidden bg-gray-50"
                           >
                             <img
                               src={image}
@@ -797,7 +829,7 @@ export function ProductsManagement() {
                               className="w-full h-24 object-cover"
                             />
                             {index === 0 && (
-                              <span className="absolute top-1 left-1 px-1.5 py-0.5 bg-gray-900 text-white text-[10px]">
+                              <span className="absolute top-1 left-1 px-1.5 py-0.5 bg-gray-900 text-white text-[10px] rounded-sm">
                                 Main
                               </span>
                             )}
@@ -841,7 +873,7 @@ export function ProductsManagement() {
                     type="text"
                     value={getSpec(formData, 'Material')}
                     onChange={(e) => setSpecField('Material', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-900"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900"
                     required
                   />
                 </div>
@@ -855,7 +887,7 @@ export function ProductsManagement() {
                     value={getSpec(formData, 'Warranty')}
                     onChange={(e) => setSpecField('Warranty', e.target.value)}
                     placeholder="2 years"
-                    className="w-full px-3 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-900"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900"
                     required
                   />
                 </div>
@@ -869,7 +901,7 @@ export function ProductsManagement() {
                     value={getSpec(formData, 'Dimensions')}
                     onChange={(e) => setSpecField('Dimensions', e.target.value)}
                     placeholder='e.g., 32" W x 34" D x 36" H'
-                    className="w-full px-3 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-900"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900"
                   />
                 </div>
 
@@ -888,7 +920,7 @@ export function ProductsManagement() {
                         inStock: Number(e.target.value) > 0,
                       })
                     }
-                    className="w-full px-3 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-900"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900"
                   />
                   <p className="text-xs text-gray-500 mt-1">
                     0 marks the product out of stock. 1–5 counts as low stock.
@@ -899,7 +931,7 @@ export function ProductsManagement() {
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Colors
                   </label>
-                  <div className="border border-gray-300 px-3 py-2">
+                  <div className="border border-gray-300 rounded-md px-3 py-2">
                     <div className="flex flex-wrap gap-2 mb-2">
                       {(formData.colors || []).map((color, idx) => (
                         <span
@@ -946,7 +978,7 @@ export function ProductsManagement() {
                       setFormData({ ...formData, assembly: e.target.value })
                     }
                     placeholder="e.g., Requires minimal assembly"
-                    className="w-full px-3 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-900"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900"
                   />
                 </div>
 
@@ -984,13 +1016,13 @@ export function ProductsManagement() {
                 <button
                   type="button"
                   onClick={() => setShowFormModal(false)}
-                  className="px-6 py-2 border border-gray-300 text-gray-700 hover:bg-gray-50 transition"
+                  className="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2 bg-gray-900 text-white hover:bg-gray-800 transition"
+                  className="px-6 py-2 bg-gray-900 text-white rounded-md hover:bg-gray-800 transition"
                 >
                   {editingProduct ? 'Save changes' : 'Add product'}
                 </button>
@@ -1002,7 +1034,7 @@ export function ProductsManagement() {
 
       {viewingProduct && (
         <div className="fixed inset-0 z-50 bg-black/50 flex items-start md:items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white max-w-4xl w-full my-8 max-h-[92vh] overflow-y-auto border border-gray-200">
+          <div className="bg-white max-w-4xl w-full my-8 max-h-[92vh] overflow-y-auto border border-gray-200 rounded-xl">
             <div className="p-6 border-b border-gray-200 flex items-center justify-between sticky top-0 bg-white z-10">
               <h2 className="text-2xl text-gray-900">Product details</h2>
               <button type="button" onClick={() => setViewingProduct(null)}>
@@ -1016,7 +1048,7 @@ export function ProductsManagement() {
                   <img
                     src={viewingProduct.images[detailImageIndex] || viewingProduct.images[0]}
                     alt={viewingProduct.name}
-                    className="w-full h-80 object-cover border border-gray-200"
+                    className="w-full h-80 object-cover border border-gray-200 rounded-lg"
                   />
                   {viewingProduct.images.length > 1 && (
                     <div className="grid grid-cols-4 gap-2 mt-2">
@@ -1025,7 +1057,7 @@ export function ProductsManagement() {
                           key={`${viewingProduct.id}-thumb-${idx}`}
                           type="button"
                           onClick={() => setDetailImageIndex(idx)}
-                          className={`border overflow-hidden ${
+                          className={`border rounded-md overflow-hidden ${
                             detailImageIndex === idx
                               ? 'border-gray-900'
                               : 'border-gray-200'
@@ -1046,19 +1078,19 @@ export function ProductsManagement() {
                   <div>
                     <div className="flex flex-wrap items-center gap-2 mb-2">
                       <span
-                        className={`inline-block px-2 py-1 text-xs border ${
+                        className={`inline-block px-2 py-1 text-xs border rounded-sm ${
                           stockBadge(viewingProduct).className
                         }`}
                       >
                         {stockBadge(viewingProduct).label}
                       </span>
                       {viewingProduct.featured && (
-                        <span className="inline-flex items-center gap-1 px-2 py-1 text-xs border border-gray-200 bg-gray-50 text-gray-900">
+                        <span className="inline-flex items-center gap-1 px-2 py-1 text-xs border border-gray-200 rounded-sm bg-gray-50 text-gray-900">
                           <Star className="w-3.5 h-3.5 fill-gray-900" />
                           Featured
                         </span>
                       )}
-                      <span className="inline-block px-2 py-1 text-xs border border-gray-200 bg-gray-50 text-gray-800">
+                      <span className="inline-block px-2 py-1 text-xs border border-gray-200 rounded-sm bg-gray-50 text-gray-800">
                         {viewingProduct.category}
                       </span>
                     </div>
@@ -1080,7 +1112,7 @@ export function ProductsManagement() {
                       <p className="text-sm font-medium text-gray-700 mb-2">
                         Specifications
                       </p>
-                      <div className="border border-gray-200 divide-y divide-gray-200">
+                      <div className="border border-gray-200 rounded-lg overflow-hidden divide-y divide-gray-200">
                         {viewingProduct.specifications.map((spec, idx) => (
                           <div
                             key={`${spec.label}-${idx}`}
@@ -1132,21 +1164,21 @@ export function ProductsManagement() {
               <button
                 type="button"
                 onClick={() => setViewingProduct(null)}
-                className="px-6 py-2 border border-gray-300 text-gray-700 hover:bg-gray-50 transition"
+                className="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition"
               >
                 Close
               </button>
               <button
                 type="button"
                 onClick={() => handleDelete(viewingProduct.id)}
-                className="px-6 py-2 border border-rose-300 text-rose-700 hover:bg-rose-50 transition"
+                className="px-6 py-2 border border-rose-300 rounded-md text-rose-700 hover:bg-rose-50 transition"
               >
                 Delete
               </button>
               <button
                 type="button"
                 onClick={() => handleOpenEditModal(viewingProduct)}
-                className="px-6 py-2 bg-gray-900 text-white hover:bg-gray-800 transition"
+                className="px-6 py-2 bg-gray-900 text-white rounded-md hover:bg-gray-800 transition"
               >
                 Edit product
               </button>
@@ -1154,6 +1186,15 @@ export function ProductsManagement() {
           </div>
         </div>
       )}
-    </div>
+
+      <ConfirmDialog
+        open={Boolean(pendingDelete)}
+        title="Delete product?"
+        message={`Delete “${pendingDelete?.name || 'this product'}”? This cannot be undone.`}
+        confirmLabel="Delete"
+        onCancel={() => setPendingDelete(null)}
+        onConfirm={confirmDelete}
+      />
+    </MotionDiv>
   );
 }

@@ -113,7 +113,7 @@ export function ChatBox({ product, onClose }) {
           <img
             src={shewaCraftLogo}
             alt=""
-            className="w-10 h-10 object-contain bg-white shrink-0 p-0.5"
+            className="w-10 h-10 object-contain bg-white rounded-md shrink-0 p-0.5"
           />
           <div className="min-w-0">
             <h3 id="owner-chat-title" className="text-sm font-medium truncate">
@@ -127,7 +127,7 @@ export function ChatBox({ product, onClose }) {
         <button
           type="button"
           onClick={onClose}
-          className={`w-9 h-9 hover:bg-white/10 flex items-center justify-center transition shrink-0 ${focusRing} focus-visible:ring-offset-gray-900`}
+          className={`w-9 h-9 rounded-md hover:bg-white/10 flex items-center justify-center transition shrink-0 ${focusRing} focus-visible:ring-offset-gray-900`}
           aria-label="Close chat"
         >
           <X className="w-5 h-5" />
@@ -139,7 +139,7 @@ export function ChatBox({ product, onClose }) {
           <img
             src={product.images?.[0]}
             alt={product.name}
-            className="w-12 h-12 object-cover bg-gray-100 shrink-0 border border-gray-200"
+            className="w-12 h-12 object-cover bg-gray-100 shrink-0 border border-gray-200 rounded-md"
           />
           <div className="flex-1 min-w-0">
             <p className="text-sm text-gray-900 truncate">{product.name}</p>
@@ -171,7 +171,7 @@ export function ChatBox({ product, onClose }) {
               }`}
             >
               <div
-                className={`max-w-[85%] px-3.5 py-2.5 ${
+                className={`max-w-[85%] px-3.5 py-2.5 rounded-md ${
                   message.sender === 'user'
                     ? 'bg-gray-900 text-white'
                     : 'bg-white text-gray-900 border border-gray-200'
@@ -197,7 +197,7 @@ export function ChatBox({ product, onClose }) {
         {isTyping && (
           <div className="flex justify-start">
             <div
-              className="bg-white border border-gray-200 px-3 py-2.5"
+              className="bg-white border border-gray-200 rounded-md px-3 py-2.5"
               aria-live="polite"
               aria-label="Owner is typing"
             >
@@ -229,7 +229,7 @@ export function ChatBox({ product, onClose }) {
                   setInputValue(label);
                   inputRef.current?.focus();
                 }}
-                className={`px-2.5 py-1.5 border border-gray-300 text-xs text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition ${focusRing}`}
+                className={`px-2.5 py-1.5 border border-gray-300 rounded-sm text-xs text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition ${focusRing}`}
               >
                 {label}
               </button>
@@ -248,12 +248,12 @@ export function ChatBox({ product, onClose }) {
             onChange={(e) => setInputValue(e.target.value)}
             placeholder="Type your message..."
             autoComplete="off"
-            className={`flex-1 min-w-0 px-3 py-2.5 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-900`}
+            className={`flex-1 min-w-0 px-3 py-2.5 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900`}
           />
           <button
             type="submit"
             disabled={!inputValue.trim()}
-            className={`px-3.5 py-2.5 bg-gray-900 text-white hover:bg-gray-800 transition disabled:bg-gray-300 disabled:cursor-not-allowed shrink-0 ${focusRing}`}
+            className={`px-3.5 py-2.5 bg-gray-900 text-white rounded-md hover:bg-gray-800 transition disabled:bg-gray-300 disabled:cursor-not-allowed shrink-0 ${focusRing}`}
             aria-label="Send message"
           >
             <Send className="w-4 h-4" />

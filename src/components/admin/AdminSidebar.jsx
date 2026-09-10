@@ -12,7 +12,14 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
-function SidebarContent({ currentView, onViewChange, setMobileMenuOpen, menuItems, onLogout }) {
+function SidebarContent({
+  currentView,
+  onViewChange,
+  setMobileMenuOpen,
+  menuItems,
+  onLogout,
+  unreadCount = 0,
+}) {
   return (
     <>
       <div className="p-6 border-b border-gray-700">
@@ -32,7 +39,7 @@ function SidebarContent({ currentView, onViewChange, setMobileMenuOpen, menuItem
                 onViewChange(item.id);
                 setMobileMenuOpen(false);
               }}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition ${
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-md transition ${
                 isActive
                   ? 'bg-gray-700 text-white'
                   : 'text-gray-300 hover:bg-gray-700/50 hover:text-white'
@@ -40,6 +47,11 @@ function SidebarContent({ currentView, onViewChange, setMobileMenuOpen, menuItem
             >
               <Icon className="w-5 h-5" />
               <span>{item.label}</span>
+              {item.id === 'messages' && unreadCount > 0 ? (
+                <span className="ml-auto min-w-5 h-5 px-1.5 text-xs bg-white text-gray-900 rounded-full inline-flex items-center justify-center">
+                  {unreadCount > 99 ? '99+' : unreadCount}
+                </span>
+              ) : null}
             </button>
           );
         })}
@@ -49,7 +61,7 @@ function SidebarContent({ currentView, onViewChange, setMobileMenuOpen, menuItem
         <button
           type="button"
           onClick={onLogout}
-          className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-300 hover:bg-gray-700/50 hover:text-white transition"
+          className="w-full flex items-center gap-3 px-4 py-3 rounded-md text-gray-300 hover:bg-gray-700/50 hover:text-white transition"
         >
           <LogOut className="w-5 h-5" />
           <span>Logout</span>
@@ -59,7 +71,7 @@ function SidebarContent({ currentView, onViewChange, setMobileMenuOpen, menuItem
   );
 }
 
-export function AdminSidebar({ currentView, onViewChange }) {
+export function AdminSidebar({ currentView, onViewChange, unreadCount = 0 }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { signOut } = useAuth();
   const navigate = useNavigate();
@@ -85,7 +97,7 @@ export function AdminSidebar({ currentView, onViewChange }) {
         <button
           type="button"
           onClick={() => setMobileMenuOpen((prev) => !prev)}
-          className="p-2 rounded-lg hover:bg-gray-700 transition"
+          className="p-2 rounded-md hover:bg-gray-700 transition"
           aria-label={mobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
         >
           {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -99,6 +111,7 @@ export function AdminSidebar({ currentView, onViewChange }) {
           setMobileMenuOpen={setMobileMenuOpen}
           menuItems={menuItems}
           onLogout={handleLogout}
+          unreadCount={unreadCount}
         />
       </div>
 
@@ -117,6 +130,7 @@ export function AdminSidebar({ currentView, onViewChange }) {
               setMobileMenuOpen={setMobileMenuOpen}
               menuItems={menuItems}
               onLogout={handleLogout}
+              unreadCount={unreadCount}
             />
           </div>
         </div>

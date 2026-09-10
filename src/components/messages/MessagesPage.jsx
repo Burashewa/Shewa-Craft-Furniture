@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, MessageSquare } from 'lucide-react';
 import {
@@ -19,6 +19,8 @@ export function MessagesPage() {
   const [activeId, setActiveId] = useState(mockConversations[0]?.id ?? null);
   const [inputValue, setInputValue] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+  const [isSending, setIsSending] = useState(false);
+  const sendingLock = useRef(false);
   const [mobileShowThread, setMobileShowThread] = useState(false);
 
   const productsById = useMemo(
@@ -52,9 +54,11 @@ export function MessagesPage() {
 
   const handleSend = (e) => {
     e.preventDefault();
-    if (!inputValue.trim() || !activeConversation) return;
+    if (!inputValue.trim() || !activeConversation || sendingLock.current) return;
 
     const text = inputValue.trim();
+    sendingLock.current = true;
+    setIsSending(true);
     const sentAt = new Date();
     const userMessage = {
       id: sentAt.getTime(),
@@ -77,6 +81,10 @@ export function MessagesPage() {
     );
     setInputValue('');
     setIsTyping(true);
+    window.setTimeout(() => {
+      sendingLock.current = false;
+      setIsSending(false);
+    }, 280);
 
     window.setTimeout(() => {
       const replyAt = new Date();
@@ -114,7 +122,7 @@ export function MessagesPage() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
         {conversations.length === 0 ? (
-          <div className="text-center py-20 px-4 border border-dashed border-gray-200 bg-white">
+          <div className="text-center py-20 px-4 border border-dashed border-gray-200 bg-white rounded-lg">
             <MessageSquare className="w-10 h-10 text-gray-400 mx-auto mb-4" />
             <h2 className="text-xl text-gray-900 mb-2">No messages yet</h2>
             <p className="text-gray-600 mb-6 max-w-md mx-auto">
@@ -123,7 +131,7 @@ export function MessagesPage() {
             </p>
             <Link
               to="/products"
-              className={`inline-flex px-6 py-3 bg-gray-900 text-white hover:bg-gray-800 transition ${focusRing}`}
+              className={`inline-flex px-6 py-3 bg-gray-900 text-white rounded-md hover:bg-gray-800 transition ${focusRing}`}
             >
               Browse products
             </Link>
@@ -131,7 +139,7 @@ export function MessagesPage() {
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-0 lg:gap-6 min-h-[70vh] lg:h-[calc(100vh-14rem)]">
             <div
-              className={`lg:col-span-1 border border-gray-200 bg-white flex flex-col min-h-0 ${
+              className={`lg:col-span-1 border border-gray-200 bg-white rounded-lg flex flex-col min-h-0 overflow-hidden ${
                 mobileShowThread ? 'hidden lg:flex' : 'flex'
               }`}
             >
@@ -170,6 +178,7 @@ export function MessagesPage() {
                 onInputChange={setInputValue}
                 onSend={handleSend}
                 isTyping={isTyping}
+                isSending={isSending}
               />
             </div>
           </div>

@@ -1,5 +1,5 @@
 import { AnimatePresence } from "framer-motion";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { Header } from "../components/Header";
 import { Hero } from "../components/Hero";
 import { CategorySection } from "../components/CategorySection";
@@ -11,12 +11,7 @@ import { Footer } from "../components/Footer";
 import { ProductDetailView } from "../components/ProductDetailView";
 
 export default function Home() {
-  const aboutRef = useRef(null);
   const [selectedProduct, setSelectedProduct] = useState(null);
-
-  const scrollToAbout = () => {
-    aboutRef.current.scrollIntoView({ behavior: "smooth" });
-  };
 
   const openProductDetails = (product) => {
     setSelectedProduct(product);
@@ -28,10 +23,10 @@ export default function Home() {
   return (
     <>
       <Header />
-      <Hero onAboutClick={scrollToAbout} />
+      <Hero />
       <CategorySection />
       <FeaturedProducts onViewDetails={openProductDetails} />
-      <AboutSection ref={aboutRef} />
+      <AboutSection />
       <Testimonials />
       <HomeCTA />
       <Footer />
