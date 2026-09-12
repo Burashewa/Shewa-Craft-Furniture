@@ -100,6 +100,26 @@ export async function patchAdminCustomerStatus(id, status) {
   return data.customer;
 }
 
+export async function listAdminTestimonials({ featured = 'all', search = '' } = {}) {
+  const params = new URLSearchParams();
+  if (featured && featured !== 'all') params.set('featured', featured);
+  if (search.trim()) params.set('search', search.trim());
+  const query = params.toString();
+  const data = await api(`/api/admin/testimonials${query ? `?${query}` : ''}`, {
+    auth: true,
+  });
+  return Array.isArray(data?.testimonials) ? data.testimonials : [];
+}
+
+export async function patchAdminTestimonialFeatured(id, featured) {
+  const data = await api(`/api/admin/testimonials/${encodeURIComponent(id)}`, {
+    method: 'PATCH',
+    auth: true,
+    body: { featured },
+  });
+  return data.testimonial;
+}
+
 export async function getAdminDashboard() {
   const data = await api('/api/admin/dashboard', { auth: true });
   return data.dashboard;

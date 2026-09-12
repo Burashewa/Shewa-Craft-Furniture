@@ -69,6 +69,7 @@ const orderSchema = new mongoose.Schema(
     customerReceivedAt: { type: Date, default: null },
     rating: { type: Number, default: null },
     review: { type: String, default: '' },
+    reviewFeatured: { type: Boolean, default: false },
     date: { type: Date, default: Date.now },
   },
   { timestamps: true }
@@ -76,5 +77,6 @@ const orderSchema = new mongoose.Schema(
 
 orderSchema.index({ user: 1, date: -1 });
 orderSchema.index({ status: 1 });
+orderSchema.index({ reviewFeatured: 1, rating: -1 });
 
 export const Order = mongoose.model('Order', orderSchema);

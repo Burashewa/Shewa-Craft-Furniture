@@ -5,6 +5,7 @@ import { ProductsManagement, normalizeProduct } from '../components/admin/Produc
 import { OrdersManagement, normalizeAdminOrder } from '../components/admin/OrderManagement';
 import { CustomersManagement } from '../components/admin/CustomerManagment';
 import { MessagesManagement } from '../components/admin/MessageManagement';
+import { TestimonialsManagement } from '../components/admin/TestimonialsManagement';
 import { useChatSocketEvent } from '../context/ChatSocketContext';
 import { listAdminConversations } from '../services/messageService';
 import {
@@ -155,6 +156,7 @@ export function AdminDashboard() {
             onMessageCustomer={handleMessageCustomer}
           />
         )}
+        {currentView === 'testimonials' && <TestimonialsManagement />}
         {currentView === 'messages' && (
           <MessagesManagement
             conversations={conversations}

@@ -119,7 +119,7 @@ export default function ForgotPassword() {
       : step === 'password'
         ? 'Choose a new password for your account.'
         : step === 'check-email'
-          ? 'If an account exists, a reset link was sent.'
+          ? 'If an account exists, a reset link was sent to that inbox.'
           : 'Enter your email to continue the reset flow.';
 
   return (
@@ -187,8 +187,8 @@ export default function ForgotPassword() {
             role="status"
             className="rounded border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800"
           >
-            If an account exists for that email, you can continue with the reset
-            link. In development the API logs the URL in the server console.
+            If an account exists for that email, we sent a reset link. Check your
+            inbox and spam folder. The link expires in 1 hour.
           </div>
           <Link
             to="/auth/signin"

@@ -11,6 +11,8 @@ import { orderRouter } from './routes/orderRoutes.js';
 import { checkoutRouter } from './routes/checkoutRoutes.js';
 import { conversationRouter } from './routes/conversationRoutes.js';
 import { uploadRouter } from './routes/uploadRoutes.js';
+import { testimonialRouter } from './routes/testimonialRoutes.js';
+import { statsRouter } from './routes/statsRoutes.js';
 import { sanitizeMongo } from './middleware/sanitizeMongo.js';
 import { errorHandler, notFound } from './middleware/errorHandler.js';
 
@@ -44,6 +46,8 @@ export function createApp() {
   app.use('/api/checkout', checkoutRouter);
   app.use('/api/conversations', conversationRouter);
   app.use('/api/uploads', uploadRouter);
+  app.use('/api/testimonials', testimonialRouter);
+  app.use('/api/stats', statsRouter);
   app.use('/api/admin', adminRouter);
 
   app.use(notFound);

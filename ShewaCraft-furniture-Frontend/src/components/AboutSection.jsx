@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useReducedMotion } from 'framer-motion';
 import { features, gallery, getAboutStats } from '../data/about';
+import { fetchAboutStats } from '../services/statsService';
 
 const focusRing =
   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2';
@@ -156,9 +157,27 @@ function AboutStat({ label, value, format, active }) {
 }
 
 function AboutStats() {
-  const stats = getAboutStats();
+  const [reviewStats, setReviewStats] = useState({
+    reviewCount: 0,
+    averageRating: 0,
+  });
+  const stats = getAboutStats(reviewStats);
   const rowRef = useRef(null);
   const [active, setActive] = useState(false);
+
+  useEffect(() => {
+    let mounted = true;
+    fetchAboutStats()
+      .then((next) => {
+        if (mounted) setReviewStats(next);
+      })
+      .catch(() => {
+        if (mounted) setReviewStats({ reviewCount: 0, averageRating: 0 });
+      });
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   useEffect(() => {
     const node = rowRef.current;

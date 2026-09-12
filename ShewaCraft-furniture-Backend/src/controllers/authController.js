@@ -1,6 +1,5 @@
 import { User, publicUser } from '../models/User.js';
 import { AppError } from '../utils/AppError.js';
-import { isDev } from '../config/env.js';
 import { env } from '../config/env.js';
 import {
   comparePassword,
@@ -10,6 +9,7 @@ import {
 } from '../services/passwordService.js';
 import { signAccessToken } from '../services/tokenService.js';
 import { createResetToken, hashResetToken } from '../services/resetTokenService.js';
+import { isSmtpConfigured, sendPasswordResetEmail } from '../services/mailService.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 
 const RESET_MS = 60 * 60 * 1000;
@@ -96,6 +96,10 @@ export const forgotPassword = asyncHandler(async (req, res) => {
     throw new AppError(400, emailError, { email: emailError });
   }
 
+  if (!isSmtpConfigured()) {
+    throw new AppError(503, 'Email delivery is not configured');
+  }
+
   const user = await User.findOne({ email });
   if (user) {
     const { token, hashed } = createResetToken();
@@ -104,8 +108,17 @@ export const forgotPassword = asyncHandler(async (req, res) => {
     await user.save();
 
     const resetUrl = `${env.clientUrl}/auth/forgot-password?token=${token}`;
-    if (isDev) {
-      console.info(`[forgot-password] Reset URL for ${email}: ${resetUrl}`);
+    try {
+      await sendPasswordResetEmail({ to: user.email, resetUrl });
+    } catch (err) {
+      const authFailed =
+        err?.code === 'EAUTH' || /invalid login/i.test(String(err?.response || ''));
+      throw new AppError(
+        502,
+        authFailed
+          ? 'Unable to send reset email. Check SMTP_USER and use a Gmail App Password for SMTP_PASS.'
+          : 'Unable to send reset email'
+      );
     }
   }
 

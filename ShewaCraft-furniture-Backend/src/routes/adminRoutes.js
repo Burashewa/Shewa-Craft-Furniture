@@ -16,6 +16,10 @@ import {
 } from '../controllers/adminCustomerController.js';
 import { updateOrderStatus } from '../controllers/orderController.js';
 import {
+  listAdminTestimonials,
+  updateAdminTestimonialFeatured,
+} from '../controllers/adminTestimonialController.js';
+import {
   getAdminConversation,
   getOrCreateAdminConversation,
   listAdminConversations,
@@ -43,6 +47,9 @@ adminRouter.delete('/products/:id', deleteAdminProduct);
 adminRouter.get('/orders', listAdminOrders);
 adminRouter.get('/orders/:id', getAdminOrder);
 adminRouter.patch('/orders/:id/status', updateOrderStatus);
+
+adminRouter.get('/testimonials', listAdminTestimonials);
+adminRouter.patch('/testimonials/:id', updateAdminTestimonialFeatured);
 
 adminRouter.get('/customers', listAdminCustomers);
 adminRouter.patch('/customers/:id/status', updateAdminCustomerStatus);

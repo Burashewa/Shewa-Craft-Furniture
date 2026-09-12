@@ -1,5 +1,4 @@
 import { Award, Hammer, HeartHandshake, Sparkles, Trees, Truck } from 'lucide-react';
-import { products } from './products';
 
 export const foundedYear = 2020;
 
@@ -72,14 +71,10 @@ export const features = [
   },
 ];
 
-export function getAboutStats() {
+export function getAboutStats({ reviewCount = 0, averageRating = 0 } = {}) {
   const years = Math.max(0, new Date().getFullYear() - foundedYear);
-  const reviewTotal = products.reduce((sum, product) => sum + (product.reviews || 0), 0);
-  const weightedRating = products.reduce(
-    (sum, product) => sum + (product.rating || 0) * (product.reviews || 0),
-    0
-  );
-  const averageRating = reviewTotal > 0 ? weightedRating / reviewTotal : 0;
+  const reviews = Math.max(0, Number(reviewCount) || 0);
+  const rating = reviews > 0 ? Number(Number(averageRating).toFixed(1)) : 0;
 
   return [
     {
@@ -91,13 +86,13 @@ export function getAboutStats() {
     {
       id: 'reviews',
       label: 'Customer reviews',
-      value: reviewTotal,
+      value: reviews,
       format: 'integer',
     },
     {
       id: 'rating',
       label: 'Average rating',
-      value: Number(averageRating.toFixed(1)),
+      value: rating,
       format: 'decimal',
     },
   ];

@@ -4,6 +4,7 @@ import {
   ShoppingCart, 
   Users, 
   MessageSquare,
+  Quote,
   LogOut,
   Menu,
   X
@@ -87,6 +88,7 @@ export function AdminSidebar({ currentView, onViewChange, unreadCount = 0 }) {
     { id: 'products', label: 'Products', icon: Package },
     { id: 'orders', label: 'Orders', icon: ShoppingCart },
     { id: 'customers', label: 'Customers', icon: Users },
+    { id: 'testimonials', label: 'Testimonials', icon: Quote },
     { id: 'messages', label: 'Messages', icon: MessageSquare },
   ];
 

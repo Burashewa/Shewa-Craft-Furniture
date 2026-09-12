@@ -48,14 +48,14 @@ export function normalizeAdminOrder(order) {
   return {
     ...order,
     total: order.totals?.total ?? order.total ?? 0,
-    product: {
+      product: {
       id: first.productId ?? order.product?.id ?? '',
       name: productName,
       price: first.unitPrice ?? order.product?.price ?? 0,
       quantity: first.quantity ?? order.quantity ?? 1,
       image: first.image || order.product?.image || '',
     },
-    customer: {
+      customer: {
       ...customer,
       id: customer.id || '',
       name: customer.name || '',
@@ -63,8 +63,8 @@ export function normalizeAdminOrder(order) {
       phone: customer.phone || '',
       location: customer.location || '',
       avatar: customer.avatar || '',
-    },
-    payment: {
+      },
+      payment: {
       ...payment,
       bank: payment.bank || '',
       screenshot: payment.screenshot || '',
@@ -123,7 +123,7 @@ export function OrdersManagement({
     const query = searchQuery.trim().toLowerCase();
 
     let list = orders.filter((order) => {
-      const matchesSearch =
+    const matchesSearch =
         !query ||
         order.id.toLowerCase().includes(query) ||
         (order.customer?.name || '').toLowerCase().includes(query) ||
@@ -134,7 +134,7 @@ export function OrdersManagement({
         (order.payment?.reference || '').toLowerCase().includes(query);
 
       const matchesStatus =
-        filterStatus === 'all' || order.status === filterStatus;
+      filterStatus === 'all' || order.status === filterStatus;
 
       return matchesSearch && matchesStatus;
     });
@@ -352,24 +352,24 @@ export function OrdersManagement({
       {...entrance}
       transition={{ duration: prefersReducedMotion ? 0 : 0.2 }}
     >
-      <div className="bg-white border-b border-gray-200 p-6">
+  <div className="bg-white border-b border-gray-200 p-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h1 className="text-3xl text-gray-900">Order Management</h1>
+      <div>
+        <h1 className="text-3xl text-gray-900">Order Management</h1>
             <p className="text-gray-600 mt-1">
               Review payments, fulfill orders, and follow delivery progress
             </p>
-          </div>
+      </div>
           <button
             type="button"
             onClick={handleExport}
             className={`inline-flex items-center justify-center gap-2 px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition duration-200 ${focusRing}`}
           >
-            <Download className="w-5 h-5" />
-            Export
-          </button>
-        </div>
+          <Download className="w-5 h-5" />
+          Export
+        </button>
       </div>
+    </div>
 
       <div className="p-6 space-y-6">
         <section className="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-7 gap-4">
@@ -437,33 +437,33 @@ export function OrdersManagement({
           <div className="flex items-center gap-2 text-sm text-gray-700 mb-3">
             <Filter className="w-4 h-4" />
             Search & filters
-          </div>
+  </div>
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
             <div className="relative xl:col-span-2">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-              <input
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+          <input
                 type="search"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search order ID, customer, product, bank, or reference..."
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md transition duration-200 focus:outline-none focus:ring-2 focus:ring-gray-900"
                 aria-label="Search orders"
-              />
-            </div>
-            <select
-              value={filterStatus}
-              onChange={(e) => setFilterStatus(e.target.value)}
+          />
+        </div>
+          <select
+            value={filterStatus}
+            onChange={(e) => setFilterStatus(e.target.value)}
               className="px-3 py-2 border border-gray-300 rounded-md transition duration-200 focus:outline-none focus:ring-2 focus:ring-gray-900"
               aria-label="Filter by status"
-            >
+          >
               <option value="all">All statuses</option>
-              <option value="pending">Pending</option>
-              <option value="approved">Approved</option>
-              <option value="shipped">Shipped</option>
-              <option value="delivered">Delivered</option>
+            <option value="pending">Pending</option>
+            <option value="approved">Approved</option>
+            <option value="shipped">Shipped</option>
+            <option value="delivered">Delivered</option>
               <option value="completed">Completed</option>
-              <option value="rejected">Rejected</option>
-            </select>
+            <option value="rejected">Rejected</option>
+          </select>
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
@@ -476,7 +476,7 @@ export function OrdersManagement({
               <option value="total-asc">Sort: Total low–high</option>
               <option value="status">Sort: Status</option>
             </select>
-          </div>
+        </div>
           <div className="mt-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
             <p className="text-sm text-gray-500">
               Showing{' '}
@@ -497,7 +497,7 @@ export function OrdersManagement({
                 Clear filters
               </button>
             )}
-          </div>
+      </div>
         </section>
 
         <section className="bg-white border border-gray-200 rounded-lg overflow-hidden">
@@ -518,44 +518,44 @@ export function OrdersManagement({
               >
                 Clear filters
               </button>
-            </div>
+    </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50 border-b border-gray-200">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+      <div className="overflow-x-auto">
+        <table className="w-full">
+          <thead className="bg-gray-50 border-b border-gray-200">
+            <tr>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Order
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Customer
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Product
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Total
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Status
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Date
-                    </th>
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Customer
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Product
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Total
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Status
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Date
+              </th>
                     <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
+                Actions
+              </th>
+            </tr>
+          </thead>
                 <tbody className="divide-y divide-gray-200">
-                  {filteredOrders.map((order) => (
+            {filteredOrders.map((order) => (
                     <tr key={order.id} className="hover:bg-gray-50/80">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <p className="text-sm font-medium text-gray-900">{order.id}</p>
                         <p className="text-xs text-gray-500 mt-0.5">
                           {order.payment.reference || order.payment.bank}
                         </p>
-                      </td>
+                </td>
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3 min-w-0">
                           <img
@@ -572,11 +572,11 @@ export function OrdersManagement({
                             </p>
                           </div>
                         </div>
-                      </td>
-                      <td className="px-6 py-4">
+                </td>
+                <td className="px-6 py-4">
                         <div className="flex items-center gap-3 min-w-0">
-                          <img
-                            src={order.product.image}
+                    <img
+                      src={order.product.image}
                             alt=""
                             className="w-12 h-12 object-cover border border-gray-200 rounded-md shrink-0"
                           />
@@ -587,46 +587,46 @@ export function OrdersManagement({
                             <p className="text-sm text-gray-500">
                               Qty {order.product.quantity}
                             </p>
-                          </div>
-                        </div>
-                      </td>
+                    </div>
+                  </div>
+                </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 tabular-nums">
                         ${Number(order.total).toLocaleString()}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
                         <span
                           className={`inline-block px-2 py-1 text-xs border rounded-sm ${getStatusClasses(
                             order.status
                           )}`}
                         >
                           {formatOrderStatus(order.status)}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {order.date}
-                      </td>
+                  </span>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  {order.date}
+                </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right">
-                        <button
+                  <button
                           type="button"
-                          onClick={() => setSelectedOrder(order)}
+                    onClick={() => setSelectedOrder(order)}
                           className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-700 hover:text-gray-900 hover:bg-gray-100 transition duration-200 ${focusRing}`}
                           aria-label={`View order ${order.id}`}
-                        >
+                  >
                           <Eye className="w-4 h-4" />
                           View
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
           )}
         </section>
-      </div>
+  </div>
 
-      {selectedOrder && (
-        <div className="fixed inset-0 z-50 bg-black/50 flex items-start md:items-center justify-center p-4 overflow-y-auto">
+  {selectedOrder && (
+    <div className="fixed inset-0 z-50 bg-black/50 flex items-start md:items-center justify-center p-4 overflow-y-auto">
           <div className="bg-white max-w-3xl w-full my-8 max-h-[92vh] overflow-y-auto border border-gray-200 rounded-xl">
             <div className="p-6 border-b border-gray-200 flex items-start justify-between gap-4 sticky top-0 bg-white z-10">
               <div>
@@ -641,11 +641,11 @@ export function OrdersManagement({
                 </p>
               </div>
               <button type="button" onClick={() => setSelectedOrder(null)}>
-                <XIcon className="w-6 h-6 text-gray-500 hover:text-gray-700" />
-              </button>
-            </div>
+            <XIcon className="w-6 h-6 text-gray-500 hover:text-gray-700" />
+          </button>
+        </div>
 
-            <div className="p-6 space-y-6">
+        <div className="p-6 space-y-6">
               <div>
                 <h3 className="text-sm font-medium text-gray-700 mb-3">
                   Fulfillment progress
@@ -750,7 +750,7 @@ export function OrdersManagement({
                 </div>
               )}
 
-              <div>
+          <div>
                 <h3 className="text-lg text-gray-900 mb-3">Customer</h3>
                 <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
                   <div className="flex items-start gap-4">
@@ -773,16 +773,16 @@ export function OrdersManagement({
                       </p>
                     </div>
                   </div>
-                </div>
-              </div>
+            </div>
+          </div>
 
-              <div>
+          <div>
                 <h3 className="text-lg text-gray-900 mb-3">Product</h3>
                 <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
                   <div className="flex flex-col sm:flex-row gap-4">
-                    <img
-                      src={selectedOrder.product.image}
-                      alt={selectedOrder.product.name}
+                  <img
+                    src={selectedOrder.product.image}
+                    alt={selectedOrder.product.name}
                       className="w-full sm:w-40 h-36 object-cover border border-gray-200 rounded-md"
                     />
                     <div className="space-y-2 text-sm">
@@ -800,9 +800,9 @@ export function OrdersManagement({
                         Total: ${Number(selectedOrder.total).toLocaleString()}
                       </p>
                     </div>
-                  </div>
                 </div>
               </div>
+          </div>
 
               <div>
                 <h3 className="text-lg text-gray-900 mb-3">Payment</h3>
@@ -825,22 +825,22 @@ export function OrdersManagement({
                     <p className="text-sm font-medium text-gray-900 mb-2">
                       Payment proof
                     </p>
-                    <img
-                      src={selectedOrder.payment.screenshot}
-                      alt="Payment proof"
+                <img 
+                  src={selectedOrder.payment.screenshot} 
+                  alt="Payment proof" 
                       className="w-full max-w-md border border-gray-300 rounded-md"
-                    />
-                  </div>
-                </div>
+                />
               </div>
+            </div>
+          </div>
 
               {selectedOrder.notes && (
-                <div>
+          <div>
                   <h3 className="text-lg text-gray-900 mb-3">Internal notes</h3>
                   <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 text-sm text-gray-700">
                     {selectedOrder.notes}
-                  </div>
-                </div>
+          </div>
+        </div>
               )}
             </div>
 
@@ -854,30 +854,30 @@ export function OrdersManagement({
                 Message customer
               </button>
 
-              {selectedOrder.status === 'pending' && (
-                <>
-                  <button
+          {selectedOrder.status === 'pending' && (
+            <>
+              <button
                     type="button"
-                    onClick={() => handleReject(selectedOrder.id)}
+                onClick={() => handleReject(selectedOrder.id)}
                     className="flex items-center gap-2 px-5 py-2 border border-rose-300 rounded-md text-rose-700 hover:bg-rose-50 transition"
-                  >
-                    <XIcon className="w-5 h-5" />
-                    Reject
-                  </button>
-                  <button
+              >
+                <XIcon className="w-5 h-5" />
+                Reject
+              </button>
+              <button
                     type="button"
-                    onClick={() => handleApprove(selectedOrder.id)}
+                onClick={() => handleApprove(selectedOrder.id)}
                     className="flex items-center gap-2 px-5 py-2 bg-gray-900 text-white rounded-md hover:bg-gray-800 transition"
-                  >
-                    <Check className="w-5 h-5" />
+              >
+                <Check className="w-5 h-5" />
                     Approve order
-                  </button>
-                </>
-              )}
-              {selectedOrder.status === 'approved' && (
-                <button
+              </button>
+            </>
+          )}
+          {selectedOrder.status === 'approved' && (
+            <button
                   type="button"
-                  onClick={() => handleShip(selectedOrder.id)}
+              onClick={() => handleShip(selectedOrder.id)}
                   className="flex items-center gap-2 px-5 py-2 bg-gray-900 text-white rounded-md hover:bg-gray-800 transition"
                 >
                   <Truck className="w-5 h-5" />
@@ -892,23 +892,23 @@ export function OrdersManagement({
                 >
                   <PackageCheck className="w-5 h-5" />
                   Confirm destination reached
-                </button>
-              )}
+            </button>
+          )}
               {(selectedOrder.status === 'delivered' ||
                 selectedOrder.status === 'completed' ||
                 selectedOrder.status === 'rejected') && (
-                <button
+            <button
                   type="button"
-                  onClick={() => setSelectedOrder(null)}
+              onClick={() => setSelectedOrder(null)}
                   className="px-5 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition"
-                >
-                  Close
-                </button>
-              )}
-            </div>
-          </div>
+            >
+              Close
+            </button>
+          )}
         </div>
-      )}
+      </div>
+    </div>
+  )}
 
       <ConfirmDialog
         open={Boolean(confirm)}

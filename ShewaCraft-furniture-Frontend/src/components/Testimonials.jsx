@@ -1,21 +1,19 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { ChevronLeft, ChevronRight, Star } from 'lucide-react';
-import { animate, motion, useMotionValue, useReducedMotion } from 'framer-motion';
-import { testimonials } from '../data/testimonials';
+import { useEffect, useState } from 'react';
+import { Star } from 'lucide-react';
+import { ConveyorSlider } from './ui/ConveyorSlider';
+import { fetchFeaturedTestimonials } from '../services/testimonialService';
 
-const MotionDiv = motion.div;
-
-const GAP_PX = 32;
-const SPEED_PX_PER_SEC = 36;
-const NUDGE_SECONDS = 0.45;
-const MD_QUERY = '(min-width: 768px)';
-const NUDGE_EASE = [0.22, 1, 0.36, 1];
+const TESTIMONIAL_VISIBLE_AT = [
+  { minWidth: 0, count: 1 },
+  { minWidth: 768, count: 3 },
+];
 
 function TestimonialCard({ testimonial }) {
+  const rating = Math.max(0, Math.min(5, Number(testimonial.rating) || 0));
   return (
     <div className="bg-white p-8 rounded-lg shadow-sm h-full">
       <div className="flex gap-1 mb-4">
-        {Array.from({ length: testimonial.rating }).map((_, index) => (
+        {Array.from({ length: rating }).map((_, index) => (
           <Star
             key={index}
             className="w-5 h-5 fill-gray-900 text-gray-900"
@@ -27,28 +25,22 @@ function TestimonialCard({ testimonial }) {
       </p>
       <div>
         <p className="text-gray-900">{testimonial.name}</p>
-        <p className="text-sm text-gray-500">{testimonial.role}</p>
+        {testimonial.product ? (
+          <p className="text-sm text-gray-500">{testimonial.product}</p>
+        ) : null}
       </div>
     </div>
   );
 }
 
-function TestimonialsGrid() {
+function TestimonialsGrid({ items }) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-      {testimonials.map((testimonial) => (
+      {items.map((testimonial) => (
         <TestimonialCard key={testimonial.id} testimonial={testimonial} />
       ))}
     </div>
   );
-}
-
-function normalizeX(value, setWidth) {
-  if (setWidth <= 0) return 0;
-  let next = value % setWidth;
-  if (next > 0) next -= setWidth;
-  if (next <= -setWidth + 0.5) return 0;
-  return next;
 }
 
 function SectionHeading() {
@@ -63,236 +55,64 @@ function SectionHeading() {
 }
 
 export function Testimonials() {
-  const prefersReducedMotion = useReducedMotion();
-  const count = testimonials.length;
-  const slides = [...testimonials, ...testimonials];
-
-  const sectionRef = useRef(null);
-  const viewportRef = useRef(null);
-  const animationRef = useRef(null);
-  const runningRef = useRef(false);
-
-  const x = useMotionValue(0);
-
-  const [inView, setInView] = useState(false);
-  const [hovered, setHovered] = useState(false);
-  const [hidden, setHidden] = useState(false);
-  const [step, setStep] = useState(0);
-  const [setWidth, setSetWidth] = useState(0);
-  const [cardWidth, setCardWidth] = useState(0);
-  const [activeDot, setActiveDot] = useState(0);
-
-  const canAnimate = !prefersReducedMotion && count > 1;
-  const shouldRun = canAnimate && inView && !hovered && !hidden && setWidth > 0;
-
-  const stopConveyor = () => {
-    animationRef.current?.stop();
-    animationRef.current = null;
-  };
-
-  const startConveyor = () => {
-    if (!runningRef.current || setWidth <= 0) return;
-    stopConveyor();
-    const from = normalizeX(x.get(), setWidth);
-    x.set(from);
-    animationRef.current = animate(x, from - setWidth, {
-      duration: setWidth / SPEED_PX_PER_SEC,
-      ease: 'linear',
-      onComplete: () => {
-        x.set(from);
-        if (runningRef.current) startConveyor();
-      },
-    });
-  };
-
-  useLayoutEffect(() => {
-    const viewport = viewportRef.current;
-    if (!viewport || prefersReducedMotion) return undefined;
-
-    const measure = () => {
-      const viewportWidth = viewport.clientWidth;
-      const visible = window.matchMedia(MD_QUERY).matches ? 3 : 1;
-      const nextCardWidth =
-        visible === 1
-          ? viewportWidth
-          : (viewportWidth - GAP_PX * (visible - 1)) / visible;
-      const nextStep = nextCardWidth + GAP_PX;
-      setCardWidth(nextCardWidth);
-      setStep(nextStep);
-      setSetWidth(count * nextStep);
-    };
-
-    measure();
-    const observer = new ResizeObserver(measure);
-    observer.observe(viewport);
-    return () => observer.disconnect();
-  }, [prefersReducedMotion, count]);
+  const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
-    const section = sectionRef.current;
-    if (!section || prefersReducedMotion) return undefined;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => setInView(entry.isIntersecting),
-      { threshold: 0.2 }
-    );
-    observer.observe(section);
-    return () => observer.disconnect();
-  }, [prefersReducedMotion]);
-
-  useEffect(() => {
-    const onVisibility = () => {
-      setHidden(document.visibilityState === 'hidden');
+    let active = true;
+    (async () => {
+      try {
+        const next = await fetchFeaturedTestimonials();
+        if (!active) return;
+        setItems(next);
+        setError('');
+      } catch (err) {
+        if (!active) return;
+        setItems([]);
+        setError(err.message || 'Unable to load testimonials');
+      } finally {
+        if (active) setLoading(false);
+      }
+    })();
+    return () => {
+      active = false;
     };
-    document.addEventListener('visibilitychange', onVisibility);
-    return () => document.removeEventListener('visibilitychange', onVisibility);
   }, []);
 
-  useEffect(() => {
-    if (!step || !setWidth) return undefined;
-    return x.on('change', (value) => {
-      const offset = Math.abs(normalizeX(value, setWidth));
-      setActiveDot(Math.round(offset / step) % count);
-    });
-  }, [x, step, setWidth, count]);
-
-  useEffect(() => {
-    runningRef.current = shouldRun;
-    if (shouldRun) {
-      startConveyor();
-    } else {
-      stopConveyor();
-    }
-    return stopConveyor;
-    // startConveyor reads latest setWidth/x via closure when this effect re-runs.
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- restart only when run conditions change
-  }, [shouldRun, setWidth]);
-
-  const nudgeBy = (direction) => {
-    if (!setWidth || !step) return;
-    stopConveyor();
-
-    let from = normalizeX(x.get(), setWidth);
-    let target = from - direction * step;
-
-    if (direction > 0 && target < -setWidth) {
-      from += setWidth;
-      x.set(from);
-      target = from - step;
-    } else if (direction < 0 && target > 0) {
-      from -= setWidth;
-      x.set(from);
-      target = from + step;
-    }
-
-    animationRef.current = animate(x, target, {
-      duration: NUDGE_SECONDS,
-      ease: NUDGE_EASE,
-      onComplete: () => {
-        x.set(normalizeX(target, setWidth));
-        if (runningRef.current) startConveyor();
-      },
-    });
-  };
-
-  const goToDot = (dotIndex) => {
-    if (!setWidth || !step) return;
-    stopConveyor();
-    const target = normalizeX(-dotIndex * step, setWidth);
-    animationRef.current = animate(x, target, {
-      duration: NUDGE_SECONDS,
-      ease: NUDGE_EASE,
-      onComplete: () => {
-        x.set(target);
-        if (runningRef.current) startConveyor();
-      },
-    });
-  };
-
-  if (prefersReducedMotion) {
-    return (
-      <section className="py-20 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <SectionHeading />
-          <TestimonialsGrid />
-        </div>
-      </section>
+  let body = null;
+  if (loading) {
+    body = <p className="text-center text-gray-600">Loading customer stories...</p>;
+  } else if (error) {
+    body = <p className="text-center text-gray-600">{error}</p>;
+  } else if (items.length === 0) {
+    body = (
+      <p className="text-center text-gray-600">
+        Customer stories will appear here when featured reviews are published.
+      </p>
+    );
+  } else {
+    body = (
+      <ConveyorSlider
+        items={items}
+        getKey={(testimonial) => testimonial.id}
+        renderItem={(testimonial) => <TestimonialCard testimonial={testimonial} />}
+        visibleAt={TESTIMONIAL_VISIBLE_AT}
+        ariaLabel="Customer testimonials"
+        previousLabel="Previous testimonial"
+        nextLabel="Next testimonial"
+        dotsLabel="Testimonials"
+        itemLabel={(_testimonial, index) => `Go to testimonial ${index + 1}`}
+        fallback={<TestimonialsGrid items={items} />}
+      />
     );
   }
 
   return (
-    <section ref={sectionRef} className="py-20 bg-gray-50">
+    <section className="py-20 bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <SectionHeading />
-
-        <div
-          className="relative"
-          onMouseEnter={() => setHovered(true)}
-          onMouseLeave={() => setHovered(false)}
-          onFocusCapture={() => setHovered(true)}
-          onBlurCapture={(event) => {
-            if (!event.currentTarget.contains(event.relatedTarget)) {
-              setHovered(false);
-            }
-          }}
-        >
-          <div
-            ref={viewportRef}
-            className="overflow-hidden"
-            role="region"
-            aria-roledescription="carousel"
-            aria-label="Customer testimonials"
-            aria-live="off"
-          >
-            <MotionDiv className="flex" style={{ x, gap: GAP_PX }}>
-              {slides.map((testimonial, slideIndex) => (
-                <div
-                  key={`${testimonial.id}-${slideIndex}`}
-                  className="flex-none"
-                  style={{ width: cardWidth || '100%' }}
-                >
-                  <TestimonialCard testimonial={testimonial} />
-                </div>
-              ))}
-            </MotionDiv>
-          </div>
-
-          <button
-            type="button"
-            onClick={() => nudgeBy(-1)}
-            className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1 md:-translate-x-4 inline-flex items-center justify-center w-11 h-11 bg-white border border-gray-200 rounded-md shadow-sm text-gray-700 hover:text-gray-900 hover:bg-gray-50 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900"
-            aria-label="Previous testimonial"
-          >
-            <ChevronLeft className="w-5 h-5" />
-          </button>
-          <button
-            type="button"
-            onClick={() => nudgeBy(1)}
-            className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1 md:translate-x-4 inline-flex items-center justify-center w-11 h-11 bg-white border border-gray-200 rounded-md shadow-sm text-gray-700 hover:text-gray-900 hover:bg-gray-50 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900"
-            aria-label="Next testimonial"
-          >
-            <ChevronRight className="w-5 h-5" />
-          </button>
-        </div>
-
-        <div className="flex justify-center gap-2 mt-8" role="tablist" aria-label="Testimonials">
-          {testimonials.map((testimonial, dotIndex) => {
-            const active = activeDot === dotIndex;
-            return (
-              <button
-                key={testimonial.id}
-                type="button"
-                role="tab"
-                aria-selected={active}
-                aria-label={`Go to testimonial ${dotIndex + 1}`}
-                onClick={() => goToDot(dotIndex)}
-                className={`h-2.5 rounded-full transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 ${
-                  active ? 'w-6 bg-gray-900' : 'w-2.5 bg-gray-300 hover:bg-gray-400'
-                }`}
-              />
-            );
-          })}
-        </div>
+        {body}
       </div>
     </section>
   );
