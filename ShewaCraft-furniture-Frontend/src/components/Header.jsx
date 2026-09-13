@@ -52,13 +52,13 @@ function DesktopNavLink({ to, end, prefersReducedMotion, children }) {
   );
 }
 
-const navItems = [
+const baseNavItems = [
   { to: '/', label: 'Home', end: true },
   { to: '/products', label: 'Products' },
-  { to: '/about', label: 'About' },
 ];
 
-const authNavItems = [{ to: '/orders', label: 'Orders' }];
+const aboutNavItem = { to: '/about', label: 'About' };
+const ordersNavItem = { to: '/orders', label: 'Orders' };
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -68,6 +68,9 @@ export function Header() {
   const { unreadCount: messagesUnread } = useMessages();
   const navigate = useNavigate();
   const prefersReducedMotion = useReducedMotion();
+  const navItems = isAuthenticated
+    ? [...baseNavItems, ordersNavItem, aboutNavItem]
+    : [...baseNavItems, aboutNavItem];
 
   const iconActions = [
     {
@@ -135,16 +138,6 @@ export function Header() {
                 {item.label}
               </DesktopNavLink>
             ))}
-            {isAuthenticated &&
-              authNavItems.map((item) => (
-                <DesktopNavLink
-                  key={item.to}
-                  to={item.to}
-                  prefersReducedMotion={prefersReducedMotion}
-                >
-                  {item.label}
-                </DesktopNavLink>
-              ))}
             {user?.role === 'admin' && (
               <DesktopNavLink to="/admin" prefersReducedMotion={prefersReducedMotion}>
                 Admin
@@ -226,17 +219,6 @@ export function Header() {
                   {item.label}
                 </NavLink>
               ))}
-              {isAuthenticated &&
-                authNavItems.map((item) => (
-                  <NavLink
-                    key={item.to}
-                    to={item.to}
-                    className={navLinkClass}
-                    onClick={closeMobileMenu}
-                  >
-                    {item.label}
-                  </NavLink>
-                ))}
               {user?.role === 'admin' && (
                 <NavLink to="/admin" className={navLinkClass} onClick={closeMobileMenu}>
                   Admin
