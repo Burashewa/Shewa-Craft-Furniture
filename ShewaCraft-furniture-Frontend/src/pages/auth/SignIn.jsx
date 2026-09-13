@@ -3,7 +3,7 @@ import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff } from 'lucide-react';
 import { AuthLayout } from '../../components/auth/AuthLayout';
 import { useAuth } from '../../context/AuthContext';
-import { DEMO_CREDENTIALS, validateEmail } from '../../services/authService';
+import { validateEmail } from '../../services/authService';
 
 const focusRing =
   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2';
@@ -185,17 +185,7 @@ export default function SignIn() {
         </Link>
       </p>
 
-      <div className="mt-6 pt-4 border-t border-gray-100">
-        <p className="text-xs text-gray-500 mb-2">Demo accounts</p>
-        <ul className="space-y-1 text-xs text-gray-600">
-          {DEMO_CREDENTIALS.map((demo) => (
-            <li key={demo.email}>
-              <span className="capitalize font-medium text-gray-700">{demo.role}:</span>{' '}
-              {demo.email} / {demo.password}
-            </li>
-          ))}
-        </ul>
-      </div>
+    
     </AuthLayout>
   );
 }

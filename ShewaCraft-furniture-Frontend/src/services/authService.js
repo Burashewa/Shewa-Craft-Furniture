@@ -1,18 +1,6 @@
 import { api } from './api';
 import { clearAllSessions, getAccessToken, writeSession } from './session';
 
-export const DEMO_CREDENTIALS = [
-  {
-    email: 'customer@shewacraft.com',
-    password: 'Customer123!',
-    role: 'customer',
-  },
-  {
-    email: 'admin@shewacraft.com',
-    password: 'Admin123!',
-    role: 'admin',
-  },
-];
 
 export function validatePassword(password) {
   if (!password || password.length < 8) {
