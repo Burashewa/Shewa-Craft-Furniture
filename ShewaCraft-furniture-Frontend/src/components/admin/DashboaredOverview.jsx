@@ -167,8 +167,8 @@ export function DashboardOverview({
             <div>
               <h2 className="text-lg text-gray-900">Needs attention</h2>
               <p className="text-sm text-gray-500">Prioritize these before other work</p>
-            </div>
-          </div>
+                  </div>
+                </div>
           <AttentionList items={dashboard.attention} onNavigate={go} />
         </section>
 
@@ -232,10 +232,10 @@ export function DashboardOverview({
                             )}`}
                           >
                             {formatOrderStatus(order.status)}
-                          </span>
+                      </span>
                         </td>
                       </tr>
-                    ))}
+                ))}
                   </tbody>
                 </table>
               </div>
@@ -247,7 +247,7 @@ export function DashboardOverview({
               <div>
                 <h2 className="text-lg text-gray-900">Top products</h2>
                 <p className="text-sm text-gray-500">By units sold</p>
-              </div>
+            </div>
               <button
                 type="button"
                 onClick={() => go('products')}
@@ -278,7 +278,7 @@ export function DashboardOverview({
                           <p className="text-sm text-gray-900 tabular-nums shrink-0">
                             ${product.revenue.toLocaleString()}
                           </p>
-                        </div>
+                  </div>
                         <div className="mt-2 flex items-center justify-between gap-2 text-xs text-gray-500">
                           <span>{product.sold} sold</span>
                           <span
@@ -293,7 +293,7 @@ export function DashboardOverview({
                             )}
                             {product.stock} in stock
                           </span>
-                        </div>
+                </div>
                         <div className="mt-2 h-1.5 bg-gray-100">
                           <div
                             className="h-full bg-gray-900"
@@ -301,8 +301,8 @@ export function DashboardOverview({
                               width: `${Math.min(100, (product.sold / maxSold) * 100)}%`,
                             }}
                           />
-                        </div>
-                      </div>
+                  </div>
+                </div>
                     </li>
                   );
                 })}

@@ -475,7 +475,7 @@ export function OrdersManagement({
               <option value="total-desc">Sort: Total high–low</option>
               <option value="total-asc">Sort: Total low–high</option>
               <option value="status">Sort: Status</option>
-            </select>
+          </select>
         </div>
           <div className="mt-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
             <p className="text-sm text-gray-500">
@@ -799,7 +799,7 @@ export function OrdersManagement({
                       <p className="text-lg text-gray-900">
                         Total: ${Number(selectedOrder.total).toLocaleString()}
                       </p>
-                    </div>
+                  </div>
                 </div>
               </div>
           </div>
