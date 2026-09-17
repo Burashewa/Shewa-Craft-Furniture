@@ -39,7 +39,7 @@ export function Hero() {
   const [index, setIndex] = useState(0);
   const [hovered, setHovered] = useState(false);
   const [tabHidden, setTabHidden] = useState(false);
-  const { products } = useCatalog();
+  const { products, loading } = useCatalog();
   const count = heroSlides.length;
   const current = heroSlides[index];
   const cardProducts = useMemo(() => {
@@ -148,8 +148,8 @@ export function Hero() {
       </div>
 
       <div className="absolute inset-x-0 bottom-16 sm:bottom-20 z-10 px-4 sm:px-8 lg:px-10">
-        <div className="max-w-7xl mx-auto flex items-end justify-between gap-4 min-w-0">
-          <MotionDiv className="min-w-0 max-w-44 sm:max-w-xs text-left" {...(intro ?? fadeUp(0.12))}>
+        <div className="max-w-7xl mx-auto flex flex-col items-stretch gap-4 sm:flex-row sm:items-end sm:justify-between min-w-0">
+          <MotionDiv className="min-w-0 w-full sm:max-w-xs text-left" {...(intro ?? fadeUp(0.12))}>
             <div className="relative">
               {heroSlides.map((slide, slideIndex) => {
                 const active = slideIndex === index;
@@ -192,11 +192,19 @@ export function Hero() {
             )}
           </MotionDiv>
 
-          {cardProducts.length > 0 && (
-            <MotionDiv className="shrink-0" {...(intro ?? fadeUp(0.24))}>
+          {loading && cardProducts.length === 0 ? (
+            <div
+              className="self-end sm:self-auto w-28 sm:w-40 md:w-44 lg:w-48 bg-white/90 p-2.5 sm:p-3 shadow-sm"
+              aria-hidden="true"
+            >
+              <div className="h-3 w-24 ml-auto mb-2 bg-gray-200" />
+              <div className="aspect-square bg-gray-100" />
+            </div>
+          ) : cardProducts.length > 0 ? (
+            <MotionDiv className="self-end sm:self-auto shrink-0" {...(intro ?? fadeUp(0.24))}>
               <Link
                 to="/products"
-                className={`group/catalog block w-32 sm:w-40 md:w-44 lg:w-48 bg-white p-2.5 sm:p-3 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition duration-200 motion-reduce:transform-none ${focusRing}`}
+                className={`group/catalog block w-28 sm:w-40 md:w-44 lg:w-48 bg-white p-2.5 sm:p-3 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition duration-200 motion-reduce:transform-none ${focusRing}`}
               >
                 <div className="flex items-center justify-end gap-1 text-[10px] sm:text-xs text-gray-900 mb-2">
                   <span>Shop Collection</span>
@@ -225,7 +233,7 @@ export function Hero() {
                 </div>
               </Link>
             </MotionDiv>
-          )}
+          ) : null}
         </div>
       </div>
 
