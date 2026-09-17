@@ -1,17 +1,15 @@
-import { useEffect, useRef, useState } from 'react';
-import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useMemo, useEffect, useRef, useState } from 'react';
+import { ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { motion, useReducedMotion } from 'framer-motion';
 import { HERO_INTERVAL_MS, heroSlides } from '../data/hero';
+import { useCatalog } from '../context/CatalogContext';
 
 const MotionButton = motion.button;
 const MotionDiv = motion.div;
 
 const focusRing =
   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-transparent';
-
-const hoverReveal =
-  'opacity-100 [@media(hover:hover)_and_(pointer:fine)]:opacity-0 [@media(hover:hover)_and_(pointer:fine)]:group-hover:opacity-100';
 
 function fadeUp(delay) {
   return {
@@ -41,8 +39,16 @@ export function Hero() {
   const [index, setIndex] = useState(0);
   const [hovered, setHovered] = useState(false);
   const [tabHidden, setTabHidden] = useState(false);
+  const { products } = useCatalog();
   const count = heroSlides.length;
   const current = heroSlides[index];
+  const catalogProduct = useMemo(
+    () =>
+      products.find((product) => product.featured && product.images?.[0]) ||
+      products.find((product) => product.images?.[0]),
+    [products]
+  );
+  const catalogImage = catalogProduct?.images?.[0];
 
   const goTo = (next) => {
     if (count < 1) return;
@@ -76,7 +82,7 @@ export function Hero() {
   return (
     <section
       ref={sectionRef}
-      className="relative h-[90vh] mt-16 overflow-hidden group"
+      className="relative h-screen min-h-[90vh] overflow-hidden group"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       aria-roledescription="carousel"
@@ -115,40 +121,42 @@ export function Hero() {
             </div>
           );
         })}
-        <div className="absolute inset-0 bg-black/30" />
+        <div className="absolute inset-0 bg-black/30 pointer-events-none" />
       </div>
 
-      <div className="relative h-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center">
-        <div className="max-w-2xl w-full">
-          <MotionDiv {...(intro ?? fadeUp(0))}>
-            <div className="relative" aria-live="polite">
-              {heroSlides.map((slide, slideIndex) => {
-                const active = slideIndex === index;
-                return (
-                  <h1
-                    key={slide.heading}
-                    className={`text-5xl sm:text-6xl lg:text-7xl text-white mb-6 ${stackLayerClass(
-                      active,
-                      slideIndex === 0,
-                      prefersReducedMotion
-                    )}`}
-                    aria-hidden={!active}
-                  >
-                    {slide.heading}
-                  </h1>
-                );
-              })}
-            </div>
-          </MotionDiv>
+      <div className="relative h-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center justify-start text-center pt-20 sm:pt-24 pb-36 min-w-0">
+        <MotionDiv className="w-full max-w-5xl min-w-0" {...(intro ?? fadeUp(0))}>
+          <div className="relative" aria-live="polite">
+            {heroSlides.map((slide, slideIndex) => {
+              const active = slideIndex === index;
+              return (
+                <h1
+                  key={slide.heading}
+                  className={`mx-auto w-full max-w-[16rem] sm:max-w-none text-5xl sm:text-6xl md:text-7xl lg:text-8xl text-white tracking-tight leading-[0.9] ${stackLayerClass(
+                    active,
+                    slideIndex === 0,
+                    prefersReducedMotion
+                  )}`}
+                  aria-hidden={!active}
+                >
+                  {slide.heading}
+                </h1>
+              );
+            })}
+          </div>
+        </MotionDiv>
+      </div>
 
-          <MotionDiv className="mb-8" {...(intro ?? fadeUp(0.12))}>
+      <div className="absolute inset-x-0 bottom-16 sm:bottom-20 z-10 px-4 sm:px-8 lg:px-10">
+        <div className="max-w-7xl mx-auto flex items-end justify-between gap-4 min-w-0">
+          <MotionDiv className="min-w-0 max-w-44 sm:max-w-xs text-left" {...(intro ?? fadeUp(0.12))}>
             <div className="relative">
               {heroSlides.map((slide, slideIndex) => {
                 const active = slideIndex === index;
                 return (
                   <p
                     key={slide.heading}
-                    className={`text-xl text-white/90 max-w-lg ${stackLayerClass(
+                    className={`text-sm text-white/90 leading-relaxed ${stackLayerClass(
                       active,
                       slideIndex === 0,
                       prefersReducedMotion
@@ -160,83 +168,59 @@ export function Hero() {
                 );
               })}
             </div>
+            {count > 1 && (
+              <div
+                className="mt-4 flex gap-1.5"
+                role="tablist"
+                aria-label="Hero slides"
+              >
+                {heroSlides.map((slide, slideIndex) => (
+                  <button
+                    key={slide.image}
+                    type="button"
+                    role="tab"
+                    aria-selected={index === slideIndex}
+                    title={slide.heading}
+                    aria-label={`Show slide ${slideIndex + 1} of ${count}: ${slide.heading}`}
+                    onClick={() => goTo(slideIndex)}
+                    className={`h-1.5 rounded-full transition duration-200 ${focusRing} ${
+                      index === slideIndex ? 'w-4 bg-white' : 'w-1.5 bg-white/50 hover:bg-white/80'
+                    }`}
+                  />
+                ))}
+              </div>
+            )}
           </MotionDiv>
 
-          <MotionDiv
-            className="flex flex-col sm:flex-row gap-4"
-            {...(intro ?? fadeUp(0.24))}
-          >
-            <Link
-              to="/products"
-              className="group/cta px-8 py-4 bg-white text-gray-900 rounded-md hover:bg-gray-100 hover:-translate-y-0.5 transition duration-200 motion-reduce:transform-none flex items-center justify-center gap-2"
-            >
-              Shop Collection
-              <ArrowRight
-                className="w-5 h-5 transition duration-200 group-hover/cta:translate-x-0.5 motion-reduce:group-hover/cta:translate-x-0"
-                aria-hidden
-              />
-            </Link>
-            <Link
-              to="/about"
-              className="px-8 py-4 bg-transparent text-white border-2 border-white rounded-md hover:bg-white/10 hover:-translate-y-0.5 transition duration-200 motion-reduce:transform-none flex items-center justify-center"
-            >
-              Learn More
-            </Link>
-          </MotionDiv>
-
-          {count > 1 && (
-            <div
-              className="mt-8 flex gap-1.5"
-              role="tablist"
-              aria-label="Hero slides"
-            >
-              {heroSlides.map((slide, slideIndex) => (
-                <button
-                  key={slide.image}
-                  type="button"
-                  role="tab"
-                  aria-selected={index === slideIndex}
-                  title={slide.heading}
-                  aria-label={`Show slide ${slideIndex + 1} of ${count}: ${slide.heading}`}
-                  onClick={() => goTo(slideIndex)}
-                  className={`h-1.5 rounded-full transition duration-200 ${focusRing} ${
-                    index === slideIndex ? 'w-4 bg-white' : 'w-1.5 bg-white/50 hover:bg-white/80'
-                  }`}
+          {catalogImage && (
+            <MotionDiv className="shrink-0" {...(intro ?? fadeUp(0.24))}>
+              <Link
+                to="/products"
+                className={`group/catalog block w-32 sm:w-40 md:w-44 lg:w-48 bg-white p-2.5 sm:p-3 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition duration-200 motion-reduce:transform-none ${focusRing}`}
+              >
+                <div className="flex items-center justify-end gap-1 text-[10px] sm:text-xs text-gray-900 mb-2">
+                  <span>Shop Collection</span>
+                  <ArrowRight
+                    className="w-3 h-3 sm:w-3.5 sm:h-3.5 transition duration-200 group-hover/catalog:translate-x-0.5 motion-reduce:group-hover/catalog:translate-x-0"
+                    aria-hidden
+                  />
+                </div>
+                <img
+                  src={catalogImage}
+                  alt={catalogProduct.name || 'Shop collection'}
+                  className="w-full aspect-square object-cover"
                 />
-              ))}
-            </div>
+              </Link>
+            </MotionDiv>
           )}
         </div>
       </div>
-
-      {count > 1 && (
-        <>
-          <button
-            type="button"
-            title="Previous slide"
-            aria-label="Previous slide"
-            onClick={() => goTo(index - 1)}
-            className={`absolute left-3 sm:left-5 top-1/2 -translate-y-1/2 w-9 h-9 bg-white/95 rounded-md shadow-sm flex items-center justify-center text-gray-700 hover:bg-white transition duration-200 motion-reduce:transition-none ${hoverReveal} ${focusRing}`}
-          >
-            <ChevronLeft className="w-4 h-4" aria-hidden />
-          </button>
-          <button
-            type="button"
-            title="Next slide"
-            aria-label="Next slide"
-            onClick={() => goTo(index + 1)}
-            className={`absolute right-3 sm:right-5 top-1/2 -translate-y-1/2 w-9 h-9 bg-white/95 rounded-md shadow-sm flex items-center justify-center text-gray-700 hover:bg-white transition duration-200 motion-reduce:transition-none ${hoverReveal} ${focusRing}`}
-          >
-            <ChevronRight className="w-4 h-4" aria-hidden />
-          </button>
-        </>
-      )}
 
       <p className="sr-only" aria-live="polite">
         {current?.heading}
       </p>
 
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2">
+      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 hidden sm:block">
         <MotionButton
           type="button"
           onClick={scrollToNext}

@@ -1,6 +1,6 @@
 import { ShoppingCart, Mail, Menu, X, LogOut, Heart } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { Link, NavLink, useNavigate } from 'react-router-dom';
+import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { motion, useReducedMotion } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import { useShop } from '../context/ShopContext';
@@ -8,18 +8,8 @@ import { useMessages } from '../context/MessagesContext';
 
 const MotionSpan = motion.span;
 
-const desktopNavLinkClass = ({ isActive }) =>
-  `relative inline-flex items-center h-16 transition duration-200 ${
-    isActive ? 'text-gray-900 font-medium' : 'text-gray-700 hover:text-gray-900'
-  }`;
-
 const navLinkClass = ({ isActive }) =>
   `transition duration-200 ${isActive ? 'text-gray-900 font-medium' : 'text-gray-700 hover:text-gray-900'}`;
-
-const iconLinkClass = ({ isActive }) =>
-  `relative inline-flex items-center justify-center w-10 h-10 rounded-md transition duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 ${
-    isActive ? 'text-gray-900 bg-gray-100' : 'text-gray-700 hover:text-gray-900 hover:bg-gray-50'
-  }`;
 
 function IconBadge({ count }) {
   if (!count || count < 1) return null;
@@ -30,19 +20,41 @@ function IconBadge({ count }) {
   );
 }
 
-function DesktopNavLink({ to, end, prefersReducedMotion, children }) {
+function DesktopNavLink({ to, end, prefersReducedMotion, overlay, compact, children }) {
   return (
-    <NavLink to={to} end={end} className={desktopNavLinkClass}>
+    <NavLink
+      to={to}
+      end={end}
+      className={({ isActive }) =>
+        `relative inline-flex items-center transition duration-200 ${
+          compact ? 'h-14' : 'h-16'
+        } ${
+          overlay
+            ? isActive
+              ? 'text-white font-medium'
+              : 'text-white/85 hover:text-white'
+            : isActive
+              ? 'text-gray-900 font-medium'
+              : 'text-gray-700 hover:text-gray-900'
+        }`
+      }
+    >
       {({ isActive }) => (
         <>
           {children}
           {isActive &&
             (prefersReducedMotion ? (
-              <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-gray-900" />
+              <span
+                className={`absolute bottom-0 left-0 right-0 h-0.5 ${
+                  overlay ? 'bg-white' : 'bg-gray-900'
+                }`}
+              />
             ) : (
               <MotionSpan
                 layoutId="nav-underline"
-                className="absolute bottom-0 left-0 right-0 h-0.5 bg-gray-900"
+                className={`absolute bottom-0 left-0 right-0 h-0.5 ${
+                  overlay ? 'bg-white' : 'bg-gray-900'
+                }`}
                 transition={{ duration: 0.2 }}
               />
             ))}
@@ -66,8 +78,12 @@ export function Header() {
   const { isAuthenticated, user, signOut } = useAuth();
   const { cartCount, favoritesCount } = useShop();
   const { unreadCount: messagesUnread } = useMessages();
+  const location = useLocation();
   const navigate = useNavigate();
   const prefersReducedMotion = useReducedMotion();
+  const isHome = location.pathname === '/';
+  const overlay = isHome && !scrolled && !mobileMenuOpen;
+  const compact = isHome && scrolled;
   const navItems = isAuthenticated
     ? [...baseNavItems, ordersNavItem, aboutNavItem]
     : [...baseNavItems, aboutNavItem];
@@ -111,17 +127,38 @@ export function Header() {
     signOut();
   };
 
+  const iconLinkClass = ({ isActive }) =>
+    `relative inline-flex items-center justify-center w-10 h-10 rounded-md transition duration-200 focus-visible:outline-none focus-visible:ring-2 ${
+      overlay
+        ? `focus-visible:ring-white ${
+            isActive ? 'text-white bg-white/15' : 'text-white hover:text-white hover:bg-white/10'
+          }`
+        : `focus-visible:ring-gray-900 ${
+            isActive
+              ? 'text-gray-900 bg-gray-100'
+              : 'text-gray-700 hover:text-gray-900 hover:bg-gray-50'
+          }`
+    }`;
+
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-200 transition duration-200 ${
-        scrolled ? 'shadow-sm' : ''
-      }`}
+      className={`fixed top-0 left-0 right-0 z-50 transition duration-200 ${
+        overlay
+          ? 'bg-transparent border-b border-transparent'
+          : 'bg-white/95 backdrop-blur-sm border-b border-gray-200'
+      } ${scrolled && !overlay ? 'shadow-sm' : ''}`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
+        <div
+          className={`flex items-center justify-between transition-[height] duration-200 ${
+            compact ? 'h-14' : 'h-16'
+          }`}
+        >
           <Link
             to="/"
-            className="shrink-0 text-2xl font-semibold text-gray-900 tracking-tight"
+            className={`shrink-0 text-2xl font-semibold tracking-tight transition duration-200 ${
+              overlay ? 'text-white' : 'text-gray-900'
+            }`}
             onClick={closeMobileMenu}
           >
             ShewaCraft
@@ -134,12 +171,19 @@ export function Header() {
                 to={item.to}
                 end={item.end}
                 prefersReducedMotion={prefersReducedMotion}
+                overlay={overlay}
+                compact={compact}
               >
                 {item.label}
               </DesktopNavLink>
             ))}
             {user?.role === 'admin' && (
-              <DesktopNavLink to="/admin" prefersReducedMotion={prefersReducedMotion}>
+              <DesktopNavLink
+                to="/admin"
+                prefersReducedMotion={prefersReducedMotion}
+                overlay={overlay}
+                compact={compact}
+              >
                 Admin
               </DesktopNavLink>
             )}
@@ -169,7 +213,11 @@ export function Header() {
                 <button
                   type="button"
                   onClick={handleSignOut}
-                  className="hidden sm:inline-flex items-center gap-1.5 h-10 px-2.5 text-sm text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-md transition duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900"
+                  className={`hidden sm:inline-flex items-center gap-1.5 h-10 px-2.5 text-sm rounded-md transition duration-200 focus-visible:outline-none focus-visible:ring-2 ${
+                    overlay
+                      ? 'text-white hover:bg-white/10 focus-visible:ring-white'
+                      : 'text-gray-700 hover:text-gray-900 hover:bg-gray-50 focus-visible:ring-gray-900'
+                  }`}
                   aria-label="Sign out"
                 >
                   <LogOut className="w-4 h-4" />
@@ -180,22 +228,32 @@ export function Header() {
               <div className="hidden sm:flex items-center gap-3">
                 <Link
                   to="/auth/signin"
-                  className="text-sm text-gray-700 hover:text-gray-900 transition duration-200"
+                  className={`text-sm transition duration-200 ${
+                    overlay ? 'text-white/90 hover:text-white' : 'text-gray-700 hover:text-gray-900'
+                  }`}
                 >
                   Sign In
                 </Link>
                 <Link
                   to="/auth/signup"
-                  className="px-4 py-1.5 bg-gray-900 text-white rounded-md text-sm hover:bg-gray-800 transition duration-200"
+                  className={`px-4 py-1.5 rounded-md text-sm transition duration-200 ${
+                    overlay
+                      ? 'bg-white text-gray-900 hover:bg-gray-100'
+                      : 'bg-gray-900 text-white hover:bg-gray-800'
+                  }`}
                 >
-                  Sign Up
+                  Get Started
                 </Link>
               </div>
             )}
 
             <button
               type="button"
-              className="md:hidden inline-flex items-center justify-center w-10 h-10 text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-md transition duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900"
+              className={`md:hidden inline-flex items-center justify-center w-10 h-10 rounded-md transition duration-200 focus-visible:outline-none focus-visible:ring-2 ${
+                overlay
+                  ? 'text-white hover:bg-white/10 focus-visible:ring-white'
+                  : 'text-gray-700 hover:text-gray-900 hover:bg-gray-50 focus-visible:ring-gray-900'
+              }`}
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               aria-expanded={mobileMenuOpen}
               aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
@@ -206,7 +264,7 @@ export function Header() {
         </div>
 
         {mobileMenuOpen && (
-          <div className="md:hidden py-4 border-t border-gray-200">
+          <div className="md:hidden py-4 border-t border-gray-200 bg-white">
             <nav className="flex flex-col space-y-3" aria-label="Mobile">
               {navItems.map((item) => (
                 <NavLink
@@ -266,7 +324,7 @@ export function Header() {
                     onClick={closeMobileMenu}
                     className="inline-flex w-fit px-4 py-2 bg-gray-900 text-white rounded-md text-sm hover:bg-gray-800 transition duration-200"
                   >
-                    Sign Up
+                    Get Started
                   </Link>
                 </>
               )}
