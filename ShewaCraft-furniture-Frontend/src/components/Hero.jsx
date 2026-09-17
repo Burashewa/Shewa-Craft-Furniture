@@ -42,13 +42,13 @@ export function Hero() {
   const { products } = useCatalog();
   const count = heroSlides.length;
   const current = heroSlides[index];
-  const catalogProduct = useMemo(
-    () =>
-      products.find((product) => product.featured && product.images?.[0]) ||
-      products.find((product) => product.images?.[0]),
-    [products]
-  );
-  const catalogImage = catalogProduct?.images?.[0];
+  const cardProducts = useMemo(() => {
+    const withImages = products.filter((product) => product.images?.[0]);
+    const featured = withImages.filter((product) => product.featured);
+    const rest = withImages.filter((product) => !product.featured);
+    return [...featured, ...rest].slice(0, Math.max(count, 1));
+  }, [products, count]);
+  const cardIndex = cardProducts.length ? index % cardProducts.length : 0;
 
   const goTo = (next) => {
     if (count < 1) return;
@@ -192,7 +192,7 @@ export function Hero() {
             )}
           </MotionDiv>
 
-          {catalogImage && (
+          {cardProducts.length > 0 && (
             <MotionDiv className="shrink-0" {...(intro ?? fadeUp(0.24))}>
               <Link
                 to="/products"
@@ -205,11 +205,24 @@ export function Hero() {
                     aria-hidden
                   />
                 </div>
-                <img
-                  src={catalogImage}
-                  alt={catalogProduct.name || 'Shop collection'}
-                  className="w-full aspect-square object-cover"
-                />
+                <div className="relative">
+                  {cardProducts.map((product, productIndex) => {
+                    const active = productIndex === cardIndex;
+                    return (
+                      <img
+                        key={product.id}
+                        src={product.images[0]}
+                        alt={active ? product.name || 'Shop collection' : ''}
+                        className={`w-full aspect-square object-cover ${stackLayerClass(
+                          active,
+                          productIndex === 0,
+                          prefersReducedMotion
+                        )}`}
+                        aria-hidden={!active}
+                      />
+                    );
+                  })}
+                </div>
               </Link>
             </MotionDiv>
           )}
