@@ -1,11 +1,10 @@
-import { useMemo, useEffect, useRef, useState } from 'react';
+import { useMemo, useEffect, useState } from 'react';
 import { ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { motion, useReducedMotion } from 'framer-motion';
 import { HERO_INTERVAL_MS, heroSlides } from '../data/hero';
 import { useCatalog } from '../context/CatalogContext';
 
-const MotionButton = motion.button;
 const MotionDiv = motion.div;
 
 const focusRing =
@@ -35,7 +34,6 @@ function stackLayerClass(active, isFirst, prefersReducedMotion) {
 
 export function Hero() {
   const prefersReducedMotion = useReducedMotion();
-  const sectionRef = useRef(null);
   const [index, setIndex] = useState(0);
   const [hovered, setHovered] = useState(false);
   const [tabHidden, setTabHidden] = useState(false);
@@ -69,20 +67,13 @@ export function Hero() {
     return () => window.clearInterval(timer);
   }, [prefersReducedMotion, hovered, tabHidden, count]);
 
-  const scrollToNext = () => {
-    sectionRef.current?.nextElementSibling?.scrollIntoView({
-      behavior: prefersReducedMotion ? 'auto' : 'smooth',
-    });
-  };
-
   const intro = prefersReducedMotion
     ? { initial: false, animate: { opacity: 1, y: 0 }, transition: { duration: 0 } }
     : null;
 
   return (
     <section
-      ref={sectionRef}
-      className="relative h-screen min-h-[90vh] overflow-hidden group"
+      className="relative h-[90vh] min-h-128 overflow-hidden group"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       aria-roledescription="carousel"
@@ -240,25 +231,6 @@ export function Hero() {
       <p className="sr-only" aria-live="polite">
         {current?.heading}
       </p>
-
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 hidden sm:block">
-        <MotionButton
-          type="button"
-          onClick={scrollToNext}
-          aria-label="Scroll to next section"
-          className={`${focusRing} rounded-full`}
-          animate={prefersReducedMotion ? undefined : { y: [0, 6, 0] }}
-          transition={
-            prefersReducedMotion
-              ? undefined
-              : { duration: 2, repeat: Infinity, ease: 'easeInOut' }
-          }
-        >
-          <div className="w-6 h-10 border-2 border-white/50 rounded-full flex items-start justify-center p-1">
-            <div className="w-1.5 h-2 bg-white/50 rounded-full" />
-          </div>
-        </MotionButton>
-      </div>
     </section>
   );
 }
